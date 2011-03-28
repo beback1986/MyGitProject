@@ -1,0 +1,33 @@
+/bin/bash  
+/bin/sh  
+/sbin/insmod.static  
+/sbin/losetup  
+coreutils  
+cpio  
+device-mapper  
+dhclient  
+diffutils  
+dmraid  
+e2fsprogs >= 1.38-12
+elfutils-libelf  
+filesystem >= 2.1.0
+fileutils  
+findutils  
+grep  
+grubby = 6.0.87-4.fc11
+gzip  
+initscripts >= 8.63-1
+isomd5sum  
+kbd  
+libselinux  
+libsepol  
+lvm2 >= 2.02.33-9
+mdadm  
+mktemp >= 1.5-5
+mount  
+nash = 6.0.87-4.fc11
+plymouth >= 0.6.0-0.2008.09.10.1
+rpmlib(CompressedFileNames) <= 3.0.4-1
+rpmlib(FileDigests) <= 4.6.0-1
+rpmlib(PayloadFilesHavePrefix) <= 4.0-1
+tar  

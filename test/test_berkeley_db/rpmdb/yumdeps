@@ -1,0 +1,30 @@
+  dependency: grubby = 6.0.87-4.fc11
+  dependency: filesystem >= 2.1.0
+  dependency: /sbin/losetup
+  dependency: mdadm
+  dependency: fileutils
+  dependency: initscripts >= 8.63-1
+  dependency: /sbin/insmod.static
+  dependency: /bin/sh
+  dependency: /bin/bash
+  dependency: lvm2 >= 2.02.33-9
+  dependency: isomd5sum
+  dependency: dmraid
+  dependency: findutils
+  dependency: gzip
+  dependency: cpio
+  dependency: mktemp >= 1.5-5
+  dependency: grep
+  dependency: e2fsprogs >= 1.38-12
+  dependency: diffutils
+  dependency: mount
+  dependency: nash = 6.0.87-4.fc11
+  dependency: dhclient
+  dependency: libsepol
+  dependency: device-mapper
+  dependency: libselinux
+  dependency: kbd
+  dependency: coreutils
+  dependency: plymouth >= 0.6.0-0.2008.09.10.1
+  dependency: tar
+  dependency: elfutils-libelf

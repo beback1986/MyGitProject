@@ -1,0 +1,3 @@
+test:test.o test_func.o
+	ld --eh-frame-hdr --build-id -m elf_i386 --hash-style=gnu -dynamic-linker /lib/ld-linux.so.2 -o test /usr/lib/gcc/i586-redhat-linux/4.4.0/../../../crt1.o /usr/lib/gcc/i586-redhat-linux/4.4.0/../../../crti.o /usr/lib/gcc/i586-redhat-linux/4.4.0/crtbegin.o -L/usr/lib/gcc/i586-redhat-linux/4.4.0 -L/usr/lib/gcc/i586-redhat-linux/4.4.0 -L/usr/lib/gcc/i586-redhat-linux/4.4.0/../../.. test.o test_func.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/i586-redhat-linux/4.4.0/crtend.o /usr/lib/gcc/i586-redhat-linux/4.4.0/../../../crtn.o
+#	gcc test.o test_func.o -o test

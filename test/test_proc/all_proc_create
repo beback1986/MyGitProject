@@ -1,0 +1,334 @@
+arch/ia64/sn/kernel/sn2/sn_proc_fs.c:	proc_create("partition_id", 0444, sgi_proc_dir,
+arch/ia64/sn/kernel/sn2/sn_proc_fs.c:	proc_create("system_serial_number", 0444, sgi_proc_dir,
+arch/ia64/sn/kernel/sn2/sn_proc_fs.c:	proc_create("licenseID", 0444, sgi_proc_dir, &proc_license_id_fops);
+arch/ia64/sn/kernel/sn2/sn_proc_fs.c:	proc_create("sn_force_interrupt", 0644, sgi_proc_dir,
+arch/ia64/sn/kernel/sn2/sn_proc_fs.c:	proc_create("coherence_id", 0444, sgi_proc_dir,
+arch/ia64/sn/kernel/sn2/sn_proc_fs.c:	proc_create("sn_topology", 0444, sgi_proc_dir, &proc_sn_topo_fops);
+arch/ia64/sn/kernel/sn2/sn2_smp.c:	proc_sn2_ptc = proc_create(PTC_BASENAME, 0444,
+arch/ia64/kernel/salinfo.c:		entry = proc_create_data("event", S_IRUSR, dir,
+arch/ia64/kernel/salinfo.c:		entry = proc_create_data("data", S_IRUSR | S_IWUSR, dir,
+arch/ia64/kernel/perfmon.c:	perfmon_dir = proc_create("perfmon", S_IRUGO, NULL, &pfm_proc_fops);
+arch/ia64/hp/common/sba_iommu.c:	proc_create(ioc_list->name, 0, dir, &ioc_fops);
+arch/arm/kernel/ecard.c:	proc_create("devices", 0, proc_bus_ecard_dir, &bus_ecard_proc_fops);
+arch/arm/mach-davinci/clock.c:	proc_create("davinci_clocks", 0, NULL, &proc_davinci_ck_operations);
+arch/parisc/kernel/pci-dma.c:		ent = proc_create("pcxl_dma", 0, proc_gsc_root,
+arch/sparc/kernel/led.c:	led = proc_create("led", 0, NULL, &led_proc_fops);
+arch/m68k/kernel/setup.c:	proc_create("hardware", 0, NULL, &hardware_proc_fops);
+arch/m68k/atari/stram.c:	proc_create("stram", 0, NULL, &stram_proc_fops);
+arch/powerpc/platforms/iseries/viopath.c:	proc_create("iSeries/config", 0, NULL, &proc_viopath_operations);
+arch/powerpc/platforms/iseries/proc.c:static int __init iseries_proc_create(void)
+arch/powerpc/platforms/iseries/proc.c:core_initcall(iseries_proc_create);
+arch/powerpc/platforms/iseries/proc.c:	proc_create("iSeries/titanTod", S_IFREG|S_IRUGO, NULL,
+arch/powerpc/platforms/iseries/lpevents.c:	proc_create("iSeries/lpevents", S_IFREG|S_IRUGO, NULL,
+arch/powerpc/platforms/iseries/mf.c:		ent = proc_create_data("vmlinux", S_IFREG|S_IWUSR, mf,
+arch/powerpc/platforms/cell/spufs/sputrace.c:	entry = proc_create("sputrace", S_IRUSR, NULL, &sputrace_fops);
+arch/powerpc/platforms/cell/spufs/sched.c:	entry = proc_create("spu_loadavg", 0, NULL, &spu_loadavg_fops);
+arch/powerpc/platforms/pseries/eeh.c:		proc_create("ppc64/eeh", 0, NULL, &proc_eeh_operations);
+arch/powerpc/platforms/pseries/rtasd.c:	entry = proc_create("ppc64/rtas/error_log", S_IRUSR, NULL,
+arch/powerpc/platforms/pseries/scanlog.c:	ent = proc_create_data("ppc64/rtas/scan-log-dump", S_IRUSR, NULL,
+arch/powerpc/platforms/pseries/reconfig.c:	ent = proc_create("ppc64/ofdt", S_IWUSR, NULL, &ofdt_fops);
+arch/powerpc/kernel/proc_ppc64.c:	pde = proc_create_data("ppc64/systemcfg", S_IFREG|S_IRUGO, NULL,
+arch/powerpc/kernel/rtas_flash.c:	return proc_create(filename, S_IRUSR | S_IWUSR, NULL, fops);
+arch/powerpc/kernel/rtas-proc.c:	proc_create("ppc64/rtas/progress", S_IRUGO|S_IWUSR, NULL,
+arch/powerpc/kernel/rtas-proc.c:	proc_create("ppc64/rtas/clock", S_IRUGO|S_IWUSR, NULL,
+arch/powerpc/kernel/rtas-proc.c:	proc_create("ppc64/rtas/poweron", S_IWUSR|S_IRUGO, NULL,
+arch/powerpc/kernel/rtas-proc.c:	proc_create("ppc64/rtas/sensors", S_IRUGO, NULL,
+arch/powerpc/kernel/rtas-proc.c:	proc_create("ppc64/rtas/frequency", S_IWUSR|S_IRUGO, NULL,
+arch/powerpc/kernel/rtas-proc.c:	proc_create("ppc64/rtas/volume", S_IWUSR|S_IRUGO, NULL,
+arch/powerpc/kernel/rtas-proc.c:	proc_create("ppc64/rtas/rmo_buffer", S_IRUSR, NULL,
+arch/powerpc/kernel/lparcfg.c:	ent = proc_create("ppc64/lparcfg", mode, NULL, &lparcfg_fops);
+arch/cris/kernel/profile.c:	entry = proc_create("system_profile", S_IWUSR | S_IRUGO, NULL,
+arch/x86/kernel/apm_32.c:	proc_create("apm", 0, NULL, &apm_file_ops);
+arch/x86/kernel/cpu/mtrr/if.c:		proc_create("mtrr", S_IWUSR | S_IRUGO, NULL, &mtrr_fops);
+arch/avr32/mm/tlb.c:	proc_create("tlb", 0, NULL, &proc_tlb_operations);
+arch/mips/basler/excite/excite_procfs.c:		e = proc_create("unit_id", S_IRUGO, pdir,
+arch/blackfin/kernel/cplbinfo.c:		proc_create("icplb", S_IRUGO, cpu_dir, &cplbinfo_fops);
+arch/blackfin/kernel/cplbinfo.c:		proc_create("dcplb", S_IRUGO, cpu_dir, &cplbinfo_fops);
+arch/blackfin/kernel/bfin_dma_5xx.c:	return proc_create("dma", 0, NULL, &proc_dma_operations) != NULL;
+block/genhd.c:	proc_create("diskstats", 0, NULL, &proc_diskstats_operations);
+block/genhd.c:	proc_create("partitions", 0, NULL, &proc_partitions_operations);
+crypto/proc.c:	proc_create("crypto", 0, NULL, &proc_crypto_ops);
+drivers/rtc/rtc-proc.c:		ent = proc_create_data("driver/rtc", 0, NULL,
+drivers/media/video/zoran/videocodec.c:	videocodec_proc_entry = proc_create("videocodecs", 0, NULL, &videocodecs_proc_fops);
+drivers/media/video/zoran/zoran_procfs.c:	zr->zoran_proc = proc_create_data(name, 0, NULL, &zoran_operations, zr);
+drivers/message/i2o/i2o_proc.c: *	i2o_proc_create_entries - Creates proc dir entries
+drivers/message/i2o/i2o_proc.c:static int i2o_proc_create_entries(struct proc_dir_entry *dir,
+drivers/message/i2o/i2o_proc.c:		tmp = proc_create_data(i2o_pe->name, i2o_pe->mode, dir,
+drivers/message/i2o/i2o_proc.c:	i2o_proc_create_entries(devdir, generic_dev_entries, dev);
+drivers/message/i2o/i2o_proc.c:		i2o_proc_create_entries(devdir, i2o_pe, dev);
+drivers/message/i2o/i2o_proc.c:	i2o_proc_create_entries(iopdir, i2o_proc_generic_iop_entries, c);
+drivers/ide/ide-proc.c:	proc_create("drivers", 0, proc_ide_root, &ide_drivers_operations);
+drivers/scsi/scsi_devinfo.c:	p = proc_create("scsi/device_info", 0, NULL, &scsi_devinfo_proc_fops);
+drivers/scsi/sg.c:		proc_create(leaf->name, mask, sg_proc_sgp, leaf->fops);
+drivers/scsi/scsi_proc.c:	pde = proc_create("scsi/scsi", 0, NULL, &proc_scsi_operations);
+drivers/md/md.c:	proc_create("mdstat", S_IRUGO, NULL, &md_seq_fops);
+drivers/input/input.c:	entry = proc_create("devices", 0, proc_bus_input_dir,
+drivers/input/input.c:	entry = proc_create("handlers", 0, proc_bus_input_dir,
+drivers/zorro/proc.c:	entry = proc_create_data(name, 0, proc_bus_zorro_dir,
+drivers/zorro/proc.c:		proc_create("devices", 0, proc_bus_zorro_dir,
+drivers/parisc/ccio-dma.c:		proc_create(MODULE_NAME, 0, proc_runway_root,
+drivers/parisc/ccio-dma.c:		proc_create(MODULE_NAME"-bitmap", 0, proc_runway_root,
+drivers/parisc/sba_iommu.c:	proc_create("sba_iommu", 0, root, &sba_proc_fops);
+drivers/parisc/sba_iommu.c:	proc_create("sba_iommu-bitmap", 0, root, &sba_proc_bitmap_fops);
+drivers/misc/hdpuftrs/hdpu_cpustate.c:	proc_de = proc_create("sky_cpustate", 0666, NULL, &proc_cpustate);
+drivers/misc/hdpuftrs/hdpu_nexus.c:	hdpu_slot_id = proc_create("sky_slot_id", 0666, NULL, &proc_slot_id);
+drivers/misc/hdpuftrs/hdpu_nexus.c:	hdpu_chassis_id = proc_create("sky_chassis_id", 0666, NULL,
+drivers/cdrom/viocd.c:	proc_create("iSeries/viocd", S_IFREG|S_IRUGO, NULL,
+drivers/gpu/drm/drm_proc.c:int drm_proc_create_files(struct drm_info_list *files, int count,
+drivers/gpu/drm/drm_proc.c:	ret = drm_proc_create_files(drm_proc_list, DRM_PROC_ENTRIES,
+drivers/isdn/hardware/eicon/divasproc.c:	divas_proc_entry = proc_create(divas_proc_name, S_IFREG | S_IRUGO,
+drivers/isdn/divert/divert_procfs.c:	isdn_divert_entry = proc_create("divert", S_IFREG | S_IRUGO,
+drivers/isdn/capi/kcapi_proc.c:	proc_create("capi/controller",   0, NULL, &proc_controller_ops);
+drivers/isdn/capi/kcapi_proc.c:	proc_create("capi/contrstats",   0, NULL, &proc_contrstats_ops);
+drivers/isdn/capi/kcapi_proc.c:	proc_create("capi/applications", 0, NULL, &proc_applications_ops);
+drivers/isdn/capi/kcapi_proc.c:	proc_create("capi/applstats",    0, NULL, &proc_applstats_ops);
+drivers/isdn/capi/kcapi_proc.c:	proc_create("capi/driver",       0, NULL, &proc_driver_ops);
+drivers/isdn/hysdn/hysdn_procconf.c:		if ((card->procconf = (void *) proc_create(conf_name,
+drivers/isdn/hysdn/hysdn_proclog.c:		pd->log = proc_create(pd->log_name,
+drivers/video/fbmem.c:	proc_create("fb", 0, NULL, &fb_proc_fops);
+drivers/pnp/isapnp/proc.c:	e = dev->procent = proc_create_data(name, S_IFREG | S_IRUGO, de,
+drivers/usb/host/sl811-hcd.c:	sl811->pde = proc_create_data(proc_filename, 0, NULL, &proc_ops, sl811);
+drivers/usb/gadget/omap_udc.c:	proc_create(proc_filename, 0, NULL, &proc_ops);
+drivers/usb/gadget/rndis.c:				= proc_create_data(name, 0660, NULL,
+drivers/usb/gadget/at91_udc.c:	udc->pde = proc_create_data(debug_filename, 0, NULL, &proc_ops, udc);
+drivers/s390/sysinfo.c:	proc_create("service_levels", 0, NULL, &service_level_ops);
+drivers/s390/char/tape_proc.c:		proc_create("tapedevices", S_IFREG | S_IRUGO | S_IWUSR, NULL,
+drivers/s390/cio/qdio_perf.c:	qdio_perf_pde = proc_create("qdio_perf", S_IFREG | S_IRUGO,
+drivers/s390/cio/blacklist.c:	entry = proc_create("cio_ignore", S_IFREG | S_IRUGO | S_IWUSR, NULL,
+drivers/s390/block/dasd_proc.c:	dasd_devices_entry = proc_create("devices",
+drivers/acpi/system.c:	entry = proc_create(ACPI_SYSTEM_FILE_INFO, S_IRUGO, acpi_root_dir,
+drivers/acpi/system.c:	entry = proc_create(ACPI_SYSTEM_FILE_DSDT, S_IRUSR, acpi_root_dir,
+drivers/acpi/system.c:	entry = proc_create(ACPI_SYSTEM_FILE_FADT, S_IRUSR, acpi_root_dir,
+drivers/acpi/button.c:	entry = proc_create_data(ACPI_BUTTON_FILE_INFO,
+drivers/acpi/button.c:		entry = proc_create_data(ACPI_BUTTON_FILE_STATE,
+drivers/acpi/event.c:	entry = proc_create("event", S_IRUSR, acpi_root_dir,
+drivers/acpi/proc.c:	proc_create("sleep", S_IFREG | S_IRUGO | S_IWUSR,
+drivers/acpi/proc.c:	proc_create("alarm", S_IFREG | S_IRUGO | S_IWUSR,
+drivers/acpi/proc.c:	proc_create("wakeup", S_IFREG | S_IRUGO | S_IWUSR,
+drivers/acpi/ac.c:	entry = proc_create_data(ACPI_AC_FILE_STATE,
+drivers/acpi/thermal.c:	entry = proc_create_data(ACPI_THERMAL_FILE_STATE,
+drivers/acpi/thermal.c:	entry = proc_create_data(ACPI_THERMAL_FILE_TEMPERATURE,
+drivers/acpi/thermal.c:	entry = proc_create_data(ACPI_THERMAL_FILE_TRIP_POINTS,
+drivers/acpi/thermal.c:	entry = proc_create_data(ACPI_THERMAL_FILE_COOLING_MODE,
+drivers/acpi/thermal.c:	entry = proc_create_data(ACPI_THERMAL_FILE_POLLING_FREQ,
+drivers/acpi/power.c:	entry = proc_create_data(ACPI_POWER_FILE_STATUS,
+drivers/acpi/sbs.c:		proc_create_data(ACPI_SBS_FILE_INFO, S_IRUGO, *dir,
+drivers/acpi/sbs.c:		proc_create_data(ACPI_SBS_FILE_STATE, S_IRUGO, *dir,
+drivers/acpi/sbs.c:		proc_create_data(ACPI_SBS_FILE_ALARM, S_IRUGO, *dir,
+drivers/acpi/fan.c:	entry = proc_create_data(ACPI_FAN_FILE_STATE,
+drivers/acpi/ec.c:	entry = proc_create_data(ACPI_EC_FILE_INFO, S_IRUGO,
+drivers/acpi/processor_core.c:	entry = proc_create_data(ACPI_PROCESSOR_FILE_INFO,
+drivers/acpi/processor_core.c:	entry = proc_create_data(ACPI_PROCESSOR_FILE_THROTTLING,
+drivers/acpi/processor_core.c:	entry = proc_create_data(ACPI_PROCESSOR_FILE_LIMIT,
+drivers/acpi/processor_idle.c:	entry = proc_create_data(ACPI_PROCESSOR_FILE_POWER,
+drivers/acpi/video.c:	entry = proc_create_data("info", S_IRUGO, device_dir,
+drivers/acpi/video.c:	entry = proc_create_data("state", S_IFREG | S_IRUGO | S_IWUSR,
+drivers/acpi/video.c:	entry = proc_create_data("brightness", S_IFREG | S_IRUGO | S_IWUSR,
+drivers/acpi/video.c:	entry = proc_create_data("EDID", S_IRUGO, device_dir,
+drivers/acpi/video.c:	entry = proc_create_data("info", S_IRUGO, device_dir,
+drivers/acpi/video.c:	entry = proc_create_data("ROM", S_IRUGO, device_dir,
+drivers/acpi/video.c:	entry = proc_create_data("POST_info", S_IRUGO, device_dir,
+drivers/acpi/video.c:	entry = proc_create_data("POST", S_IFREG | S_IRUGO | S_IWUSR,
+drivers/acpi/video.c:	entry = proc_create_data("DOS", S_IFREG | S_IRUGO | S_IWUSR,
+drivers/acpi/battery.c:		entry = proc_create_data(acpi_battery_file[i].name,
+drivers/nubus/proc.c:	proc_create("devices", 0, proc_bus_nubus_dir, &nubus_devices_proc_fops);
+drivers/char/misc.c:	proc_create("misc", 0, NULL, &misc_proc_fops);
+drivers/char/sysrq.c:	proc_create("sysrq-trigger", S_IWUSR, NULL, &proc_sysrq_trigger_operations);
+drivers/char/i8k.c:	proc_i8k = proc_create("i8k", 0, NULL, &i8k_fops);
+drivers/char/nvram.c:	if (!proc_create("driver/nvram", 0, NULL, &nvram_proc_fops))
+drivers/char/ip2/ip2main.c:	if (!proc_create("ip2mem",0,NULL,&ip2mem_proc_fops)) {
+drivers/char/rtc.c:	ent = proc_create("driver/rtc", 0, NULL, &rtc_proc_fops);
+drivers/char/apm-emulation.c:	proc_create("apm", 0, NULL, &apm_proc_fops);
+drivers/char/toshiba.c:		pde = proc_create("toshiba", 0, NULL, &proc_toshiba_fops);
+drivers/char/viotape.c:	proc_create("iSeries/viotape", S_IFREG|S_IRUGO, NULL,
+drivers/platform/x86/thinkpad_acpi.c:		u8 proc_created:1;
+drivers/platform/x86/thinkpad_acpi.c:	if (ibm->flags.proc_created) {
+drivers/platform/x86/thinkpad_acpi.c:		ibm->flags.proc_created = 0;
+drivers/platform/x86/thinkpad_acpi.c:		ibm->flags.proc_created = 1;
+drivers/block/cciss.c:	pde = proc_create_data(hba[i]->devname, S_IWUSR | S_IRUSR | S_IRGRP |
+drivers/block/ps3vram.c:	pde = proc_create(DEVICE_NAME, 0444, NULL, &ps3vram_proc_fops);
+drivers/block/pktcdvd.c:	proc_create_data(pd->name, 0, pkt_proc, &pkt_proc_fops, pd);
+drivers/pci/proc.c:	e = proc_create_data(name, S_IFREG | S_IRUGO | S_IWUSR, bus->procdir,
+drivers/pci/proc.c:	proc_create("devices", 0, proc_bus_pci_dir,
+drivers/net/ibmveth.c:		entry = proc_create_data(u_addr, S_IFREG, ibmveth_proc_dir,
+drivers/net/irda/vlsi_ir.c:		ent = proc_create_data(ndev->name, S_IFREG|S_IRUGO,
+drivers/net/bonding/bond_main.c:		bond->proc_entry = proc_create_data(bond_dev->name,
+drivers/net/wireless/airo.c:	entry = proc_create_data("StatsDelta",
+drivers/net/wireless/airo.c:	entry = proc_create_data("Stats",
+drivers/net/wireless/airo.c:	entry = proc_create_data("Status",
+drivers/net/wireless/airo.c:	entry = proc_create_data("Config",
+drivers/net/wireless/airo.c:	entry = proc_create_data("SSID",
+drivers/net/wireless/airo.c:	entry = proc_create_data("APList",
+drivers/net/wireless/airo.c:	entry = proc_create_data("BSSList",
+drivers/net/wireless/airo.c:	entry = proc_create_data("WepKey",
+drivers/net/wireless/ray_cs.c:    proc_create("driver/ray_cs/ray_cs", 0, NULL, &ray_cs_proc_fops);
+fs/nfs/nfs3proc.c:nfs3_proc_create(struct inode *dir, struct dentry *dentry, struct iattr *sattr,
+fs/nfs/nfs3proc.c:	.create		= nfs3_proc_create,
+fs/nfs/proc.c:nfs_proc_create(struct inode *dir, struct dentry *dentry, struct iattr *sattr,
+fs/nfs/proc.c:	.create		= nfs_proc_create,
+fs/nfs/client.c:	p = proc_create("servers", S_IFREG|S_IRUGO,
+fs/nfs/client.c:	p = proc_create("volumes", S_IFREG|S_IRUGO,
+fs/nfs/nfs4proc.c:nfs4_proc_create(struct inode *dir, struct dentry *dentry, struct iattr *sattr,
+fs/nfs/nfs4proc.c:	.create		= nfs4_proc_create,
+fs/nfs/dir.c: * See comments for nfs_proc_create regarding failed operations.
+fs/nfs/dir.c: * See comments for nfs_proc_create regarding failed operations.
+fs/proc/loadavg.c:	proc_create("loadavg", 0, NULL, &loadavg_proc_fops);
+fs/proc/cpuinfo.c:	proc_create("cpuinfo", 0, NULL, &proc_cpuinfo_operations);
+fs/proc/version.c:	proc_create("version", 0, NULL, &version_proc_fops);
+fs/proc/page.c:	proc_create("kpagecount", S_IRUSR, NULL, &proc_kpagecount_operations);
+fs/proc/page.c:	proc_create("kpageflags", S_IRUSR, NULL, &proc_kpageflags_operations);
+fs/proc/cmdline.c:	proc_create("cmdline", 0, NULL, &cmdline_proc_fops);
+fs/proc/meminfo.c:	proc_create("meminfo", 0, NULL, &meminfo_proc_fops);
+fs/proc/kcore.c:	proc_root_kcore = proc_create("kcore", S_IRUSR, NULL, &proc_kcore_operations);
+fs/proc/stat.c:	proc_create("stat", 0, NULL, &proc_stat_operations);
+fs/proc/nommu.c:	proc_create("maps", S_IRUGO, NULL, &proc_nommu_region_list_operations);
+fs/proc/interrupts.c:	proc_create("interrupts", 0, NULL, &proc_interrupts_operations);
+fs/proc/root.c:EXPORT_SYMBOL(proc_create_data);
+fs/proc/generic.c:static struct proc_dir_entry *__proc_create(struct proc_dir_entry **parent,
+fs/proc/generic.c:	ent = __proc_create(&parent, name,
+fs/proc/generic.c:	ent = __proc_create(&parent, name, S_IFDIR | mode, 2);
+fs/proc/generic.c:	ent = __proc_create(&parent, name, S_IFDIR | S_IRUGO | S_IXUGO, 2);
+fs/proc/generic.c:	ent = __proc_create(&parent, name, mode, nlink);
+fs/proc/generic.c:struct proc_dir_entry *proc_create_data(const char *name, mode_t mode,
+fs/proc/generic.c:	pde = __proc_create(&parent, name, mode, nlink);
+fs/proc/vmcore.c:	proc_vmcore = proc_create("vmcore", S_IRUSR, NULL, &proc_vmcore_operations);
+fs/proc/devices.c:	proc_create("devices", 0, NULL, &proc_devinfo_operations);
+fs/proc/kmsg.c:	proc_create("kmsg", S_IRUSR, NULL, &proc_kmsg_operations);
+fs/proc/proc_tty.c:	proc_create("tty/ldiscs", 0, NULL, &tty_ldiscs_proc_fops);
+fs/proc/proc_tty.c:	proc_create("tty/drivers", 0, NULL, &proc_tty_drivers_operations);
+fs/proc/proc_net.c:	return proc_create(name, mode, net->proc_net, fops);
+fs/filesystems.c:	proc_create("filesystems", 0, NULL, &filesystems_proc_fops);
+fs/afs/proc.c:	p = proc_create("cells", 0, proc_afs, &afs_proc_cells_fops);
+fs/afs/proc.c:	p = proc_create("rootcell", 0, proc_afs, &afs_proc_rootcell_fops);
+fs/afs/proc.c:	p = proc_create_data("servers", 0, cell->proc_dir,
+fs/afs/proc.c:	p = proc_create_data("vlservers", 0, cell->proc_dir,
+fs/afs/proc.c:	p = proc_create_data("volumes", 0, cell->proc_dir,
+fs/ext4/ext4.h:	proc = proc_create_data(name, mode, sbi->s_proc,		\
+fs/ext4/super.c:		proc_create_data("inode_readahead_blks", 0644, sbi->s_proc,
+fs/ext4/mballoc.c:		proc_create_data("mb_history", S_IRUGO, sbi->s_proc,
+fs/ext4/mballoc.c:		proc_create_data("mb_groups", S_IRUGO, sbi->s_proc,
+fs/jfs/jfs_debug.c:		proc_create(Entries[i].name, 0, base, Entries[i].proc_fops);
+fs/cifs/cifs_debug.c:	proc_create("DebugData", 0, proc_fs_cifs, &cifs_debug_data_proc_fops);
+fs/cifs/cifs_debug.c:	proc_create("Stats", 0, proc_fs_cifs, &cifs_stats_proc_fops);
+fs/cifs/cifs_debug.c:	proc_create("cifsFYI", 0, proc_fs_cifs, &cifsFYI_proc_fops);
+fs/cifs/cifs_debug.c:	proc_create("traceSMB", 0, proc_fs_cifs, &traceSMB_proc_fops);
+fs/cifs/cifs_debug.c:	proc_create("OplockEnabled", 0, proc_fs_cifs, &cifs_oplock_proc_fops);
+fs/cifs/cifs_debug.c:	proc_create("Experimental", 0, proc_fs_cifs,
+fs/cifs/cifs_debug.c:	proc_create("LinuxExtensionsEnabled", 0, proc_fs_cifs,
+fs/cifs/cifs_debug.c:	proc_create("MultiuserMount", 0, proc_fs_cifs,
+fs/cifs/cifs_debug.c:	proc_create("SecurityFlags", 0, proc_fs_cifs,
+fs/cifs/cifs_debug.c:	proc_create("LookupCacheEnabled", 0, proc_fs_cifs,
+fs/nfsd/nfs3proc.c:nfsd3_proc_create(struct svc_rqst *rqstp, struct nfsd3_createargs *argp,
+fs/nfsd/vfs.c:		/* called from nfsd_proc_mkdir, or possibly nfsd3_proc_create */
+fs/nfsd/vfs.c:		/* called from nfsd_proc_create */
+fs/nfsd/nfsctl.c:	entry = proc_create("exports", 0, entry, &exports_operations);
+fs/nfsd/nfsfh.c:		 * (e.g. nfsproc_create calls fh_verify, then nfsd_create
+fs/nfsd/nfsfh.c: * This is only called by nfsd_create, nfsd_create_v3 and nfsd_proc_create
+fs/nfsd/nfsproc.c:nfsd_proc_create(struct svc_rqst *rqstp, struct nfsd_createargs *argp,
+fs/nfsd/nfsproc.c:				"nfsd_proc_create: file handle not verified\n");
+fs/jbd2/journal.c:		proc_create_data("history", S_IRUGO, journal->j_proc_entry,
+fs/jbd2/journal.c:		proc_create_data("info", S_IRUGO, journal->j_proc_entry,
+fs/smbfs/proc.c:smb_proc_create(struct dentry *dentry, __u16 attr, time_t ctime, __u16 *fileid)
+fs/smbfs/proto.h:extern int smb_proc_create(struct dentry *dentry, __u16 attr, time_t ctime, __u16 *fileid);
+fs/smbfs/dir.c:	error = smb_proc_create(dentry, 0, get_seconds(), &fileid);
+fs/reiserfs/procfs.c:	proc_create_data(name, 0, REISERFS_SB(sb)->procdir,
+fs/locks.c:	proc_create("locks", 0, NULL, &proc_locks_operations);
+include/linux/proc_fs.h:struct proc_dir_entry *proc_create_data(const char *name, mode_t mode,
+include/linux/proc_fs.h:static inline struct proc_dir_entry *proc_create(const char *name, mode_t mode,
+include/linux/proc_fs.h:	return proc_create_data(name, mode, parent, proc_fops, NULL);
+include/linux/proc_fs.h:static inline struct proc_dir_entry *proc_create(const char *name,
+include/linux/proc_fs.h:static inline struct proc_dir_entry *proc_create_data(const char *name,
+ipc/util.c:	pde = proc_create_data(path,
+kernel/kallsyms.c:	proc_create("kallsyms", 0444, NULL, &kallsyms_operations);
+kernel/profile.c:	entry = proc_create("profile", S_IWUSR | S_IRUGO,
+kernel/dma.c:	proc_create("dma", 0, NULL, &proc_dma_operations);
+kernel/sched_stats.h:	proc_create("schedstat", 0, NULL, &proc_schedstat_operations);
+kernel/irq/proc.c:	proc_create_data("smp_affinity", 0600, desc->dir,
+kernel/irq/proc.c:	proc_create("irq/default_smp_affinity", 0600, NULL,
+kernel/latencytop.c:	proc_create("latency_stats", 0644, NULL, &lstats_fops);
+kernel/resource.c:	proc_create("ioports", 0, NULL, &proc_ioports_operations);
+kernel/resource.c:	proc_create("iomem", 0, NULL, &proc_iomem_operations);
+kernel/time/timer_list.c:	pe = proc_create("timer_list", 0644, NULL, &timer_list_fops);
+kernel/time/timer_stats.c:	pe = proc_create("timer_stats", 0644, NULL, &tstats_fops);
+kernel/module.c:	proc_create("modules", 0, NULL, &proc_modules_operations);
+kernel/lockdep_proc.c:	proc_create("lockdep", S_IRUSR, NULL, &proc_lockdep_operations);
+kernel/lockdep_proc.c:	proc_create("lockdep_chains", S_IRUSR, NULL,
+kernel/lockdep_proc.c:	proc_create("lockdep_stats", S_IRUSR, NULL,
+kernel/lockdep_proc.c:	proc_create("lock_stat", S_IRUSR, NULL, &proc_lock_stat_operations);
+kernel/exec_domain.c:	proc_create("execdomains", 0, NULL, &execdomains_proc_fops);
+kernel/cgroup.c:	proc_create("cgroups", 0, NULL, &proc_cgroupstats_operations);
+kernel/sched_debug.c:	pe = proc_create("sched_debug", 0444, NULL, &sched_debug_fops);
+kernel/configs.c:	entry = proc_create("config.gz", S_IFREG | S_IRUGO, NULL,
+mm/vmalloc.c:	proc_create("vmallocinfo", S_IRUSR, NULL, &proc_vmalloc_operations);
+mm/swapfile.c:	proc_create("swaps", 0, NULL, &proc_swaps_operations);
+mm/slab.c:	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+mm/slab.c:	proc_create("slab_allocators", 0, NULL, &proc_slabstats_operations);
+mm/vmstat.c:	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
+mm/vmstat.c:	proc_create("pagetypeinfo", S_IRUGO, NULL, &pagetypeinfo_file_ops);
+mm/vmstat.c:	proc_create("vmstat", S_IRUGO, NULL, &proc_vmstat_file_operations);
+mm/vmstat.c:	proc_create("zoneinfo", S_IRUGO, NULL, &proc_zoneinfo_file_operations);
+mm/slub.c:	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+net/atm/lec.c:	p = proc_create("lec", S_IRUGO, atm_proc_root, &lec_seq_fops);
+net/atm/proc.c:	dev->proc_entry = proc_create_data(dev->proc_name, 0, atm_proc_root,
+net/atm/proc.c:		dirent = proc_create(e->name, S_IRUGO,
+net/atm/mpoa_proc.c:	p = proc_create(STAT_FILE_NAME, 0, atm_proc_root, &mpc_file_operations);
+net/atm/br2684.c:	p = proc_create("br2684", 0, atm_proc_root, &br2684_proc_ops);
+net/atm/clip.c:		p = proc_create("arp", S_IRUGO, atm_proc_root, &arp_seq_fops);
+net/wanrouter/wanproc.c:	p = proc_create("config", S_IRUGO, proc_router, &config_fops);
+net/wanrouter/wanproc.c:	p = proc_create("status", S_IRUGO, proc_router, &status_fops);
+net/wanrouter/wanproc.c:	wandev->dent = proc_create(wandev->name, S_IRUGO,
+net/ipx/ipx_proc.c:	p = proc_create("interface", S_IRUGO,
+net/ipx/ipx_proc.c:	p = proc_create("route", S_IRUGO, ipx_proc_dir, &ipx_seq_route_fops);
+net/ipx/ipx_proc.c:	p = proc_create("socket", S_IRUGO, ipx_proc_dir, &ipx_seq_socket_fops);
+net/sctp/objcnt.c:	ent = proc_create("sctp_dbg_objcnt", 0,
+net/sctp/proc.c:	p = proc_create("snmp", S_IRUGO, proc_net_sctp, &sctp_snmp_seq_fops);
+net/sctp/proc.c:	p = proc_create("eps", S_IRUGO, proc_net_sctp, &sctp_eps_seq_fops);
+net/sctp/proc.c:	p = proc_create("assocs", S_IRUGO, proc_net_sctp,
+net/irda/irnet/irnet_irda.c:  proc_create("irnet", 0, proc_irda, &irnet_proc_fops);
+net/irda/irlan/irlan_common.c:	proc = proc_create("irlan", 0, proc_irda, &irlan_fops);
+net/irda/ircomm/ircomm_core.c:	ent = proc_create("ircomm", 0, proc_irda, &ircomm_proc_fops);
+net/irda/irproc.c:		d = proc_create(irda_dirs[i].name, 0, proc_irda,
+net/sunrpc/cache.c:	p = proc_create_data("flush", S_IFREG|S_IRUSR|S_IWUSR,
+net/sunrpc/cache.c:		p = proc_create_data("channel", S_IFREG|S_IRUSR|S_IWUSR,
+net/sunrpc/cache.c:		p = proc_create_data("content", S_IFREG|S_IRUSR|S_IWUSR,
+net/sunrpc/stats.c:	return proc_create_data(name, 0, proc_net_rpc, fops, data);
+net/llc/llc_proc.c:	p = proc_create("socket", S_IRUGO, llc_proc_dir, &llc_seq_socket_fops);
+net/llc/llc_proc.c:	p = proc_create("core", S_IRUGO, llc_proc_dir, &llc_seq_core_fops);
+net/ipv4/tcp_ipv4.c:	p = proc_create_data(afinfo->name, S_IRUGO, net->proc_net,
+net/ipv4/udp.c:	p = proc_create_data(afinfo->name, S_IRUGO, net->proc_net,
+net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c:	proc_stat = proc_create("ip_conntrack", S_IRUGO,
+net/ipv4/netfilter/ip_queue.c:	proc = proc_create(IPQ_PROC_FS_NAME, 0, init_net.proc_net,
+net/ipv4/netfilter/ipt_CLUSTERIP.c:		c->pde = proc_create_data(buffer, S_IWUSR|S_IRUSR,
+net/ipv4/route.c:	pde = proc_create("rt_cache", S_IRUGO,
+net/netfilter/nfnetlink_queue.c:	if (!proc_create("nfnetlink_queue", 0440,
+net/netfilter/nf_conntrack_standalone.c:	pde = proc_create("nf_conntrack", S_IRUGO, net->proc_net_stat,
+net/netfilter/xt_recent.c:	pde = proc_create_data(t->name, ip_list_perms, recent_proc_dir,
+net/netfilter/xt_recent.c:	pde = proc_create_data(t->name, ip_list_perms, proc_old_dir,
+net/netfilter/nf_queue.c:	if (!proc_create("nf_queue", S_IRUGO,
+net/netfilter/nfnetlink_log.c:	if (!proc_create("nfnetlink_log", 0440,
+net/netfilter/x_tables.c:	proc = proc_create_data(buf, 0440, net->proc_net, &xt_table_ops,
+net/netfilter/x_tables.c:	proc = proc_create_data(buf, 0440, net->proc_net, &xt_match_ops,
+net/netfilter/x_tables.c:	proc = proc_create_data(buf, 0440, net->proc_net, &xt_target_ops,
+net/netfilter/xt_hashlimit.c:	hinfo->pde = proc_create_data(minfo->name, 0,
+net/netfilter/xt_hashlimit.c:	hinfo->pde = proc_create_data(minfo->name, 0,
+net/netfilter/nf_log.c:	if (!proc_create("nf_log", S_IRUGO,
+net/8021q/vlanproc.c:	vn->proc_vlan_conf = proc_create(name_conf, S_IFREG|S_IRUSR|S_IWUSR,
+net/8021q/vlanproc.c:		proc_create_data(vlandev->name, S_IFREG|S_IRUSR|S_IWUSR,
+net/x25/x25_proc.c:	p = proc_create("route", S_IRUGO, x25_proc_dir, &x25_seq_route_fops);
+net/x25/x25_proc.c:	p = proc_create("socket", S_IRUGO, x25_proc_dir, &x25_seq_socket_fops);
+net/x25/x25_proc.c:	p = proc_create("forward", S_IRUGO, x25_proc_dir,
+net/ipv6/proc.c:	p = proc_create_data(idev->dev->name, S_IRUGO,
+net/ipv6/netfilter/ip6_queue.c:	proc = proc_create(IPQ_PROC_FS_NAME, 0, init_net.proc_net,
+net/core/neighbour.c:	if (!proc_create_data(tbl->id, 0, init_net.proc_net_stat,
+net/core/pktgen.c:	pkt_dev->entry = proc_create_data(ifname, 0600, pg_proc_dir,
+net/core/pktgen.c:	pe = proc_create_data(t->tsk->comm, 0600, pg_proc_dir,
+net/core/pktgen.c:	pe = proc_create(PGCTRL, 0600, pg_proc_dir, &pktgen_fops);
+net/appletalk/atalk_proc.c:	p = proc_create("interface", S_IRUGO, atalk_proc_dir,
+net/appletalk/atalk_proc.c:	p = proc_create("route", S_IRUGO, atalk_proc_dir,
+net/appletalk/atalk_proc.c:	p = proc_create("socket", S_IRUGO, atalk_proc_dir,
+net/appletalk/atalk_proc.c:	p = proc_create("arp", S_IRUGO, atalk_proc_dir, &atalk_seq_arp_fops);
+samples/tracepoints/tracepoint-sample.c:	pentry_example = proc_create("tracepoint-example", 0444, NULL,
+samples/markers/marker-example.c:	pentry_example = proc_create("marker-example", 0444, NULL, &mark_ops);
+security/keys/proc.c:	p = proc_create("keys", 0, NULL, &proc_keys_fops);
+security/keys/proc.c:	p = proc_create("key-users", 0, NULL, &proc_key_users_fops);
+sound/core/memalloc.c:	snd_mem_proc = proc_create(SND_MEM_PROC_FILE, 0644, NULL,
