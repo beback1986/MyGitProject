@@ -3,8 +3,8 @@
 
 #define __force        __attribute__((force))
 
-typedef unsigned int u16;
-typedef unsigned short u32;
+typedef unsigned short u16;
+typedef unsigned long u32;
 
 typedef u16 __wsum;
 typedef u32 __sum16;
@@ -36,9 +36,9 @@ static inline __wsum csum_tcpudp_nofold(__be32 saddr, __be32 daddr,
 }
 
 /*
- *  * computes the checksum of the TCP/UDP pseudo-header
- *   * returns a 16-bit checksum, already complemented
- *    */
+ * computes the checksum of the TCP/UDP pseudo-header
+ * returns a 16-bit checksum, already complemented
+ */
 static inline __sum16 csum_tcpudp_magic(__be32 saddr, __be32 daddr,
                                         unsigned short len,
                                         unsigned short proto,
@@ -46,5 +46,7 @@ static inline __sum16 csum_tcpudp_magic(__be32 saddr, __be32 daddr,
 {
         return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
 }
+
+extern u16 tcp_sum_calc(u16 len_tcp, u16 src_addr[], u16 dest_addr[], int padding, u16 buff[]);
 
 #endif /* __TCP_CHECKSUM_H */

