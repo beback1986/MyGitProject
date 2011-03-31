@@ -48,11 +48,11 @@ int main(int argc, char **argv)
 	if (connect(servfd,(struct sockaddr*)&servaddr, socklen) < 0)
 		RETURN("can't connect to server!");
 	i = 10;
-	while (--i > 0) {
+/*	while (--i > 0) {
 		ret = send(servfd,buf,BUFFER_SIZE,0);
 		printf("%d bytes send\n", ret);
-	}
-/*	ret = send(servfd, hello, strlen(hello), 0);*/
+	}*/
+	ret = send(servfd, hello, strlen(hello), 0);
 	close(clifd);
 	return 0;
 }

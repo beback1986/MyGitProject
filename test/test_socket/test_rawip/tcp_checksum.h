@@ -1,14 +1,27 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  tcp_checksum.h
+ *
+ *    Description:  all TCP checksum related function & macro.
+ *
+ *        Version:  1.0
+ *        Created:  03/31/2011 03:23:18 PM
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Beback
+ *        Company:  Xidian
+ *
+ * =====================================================================================
+ */
+
 #ifndef __TCP_CHECKSUM_H
 #define __TCP_CHECKSUM_H
 
-#define __force        __attribute__((force))
+#include "types.h"
 
-typedef unsigned short u16;
-typedef unsigned long u32;
-
-typedef u16 __wsum;
-typedef u32 __sum16;
-typedef u32 __be32;
+#define __force __attribute__((force))
 
 static inline __sum16 csum_fold(__wsum sum)
 {
@@ -47,6 +60,10 @@ static inline __sum16 csum_tcpudp_magic(__be32 saddr, __be32 daddr,
         return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
 }
 
-extern u16 tcp_sum_calc(u16 len_tcp, u16 src_addr[], u16 dest_addr[], int padding, u16 buff[]);
+extern u16 
+tcp_sum_calc(u16 len_tcp, u16 src_addr[], u16 dest_addr[], int padding, u16 buff[]);
+
+extern unsigned short
+tcp_csum(u32 saddr, u32 daddr, u16 tcp_len, u16 *buf);
 
 #endif /* __TCP_CHECKSUM_H */

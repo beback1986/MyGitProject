@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 
 	socklen_t length = sizeof(cliaddr);
 	clifd = accept(servfd,(struct sockaddr*)&cliaddr,&length);
-	sleep(10);
+//	sleep(10);
 	while(1)
 	{
 		memset(buf, '\0', BUFFER_SIZE);

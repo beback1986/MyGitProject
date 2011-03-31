@@ -67,3 +67,19 @@ u16 tcp_sum_calc(u16 len_tcp, u16 src_addr[],u16 dest_addr[], int padding, u16 b
 
 	return ((unsigned short) sum);
 }
+
+unsigned short
+tcp_csum(u32 saddr, u32 daddr, u16 tcp_len, u16 *buf)
+{
+	unsigned short _saddr[2];
+	unsigned short _daddr[2];
+
+	_saddr[0] = (unsigned short) (saddr & 0xffff);
+	_saddr[1] = (unsigned short) (saddr >> 16);
+
+	_daddr[0] = (unsigned short) (daddr & 0xffff);
+	_daddr[1] = (unsigned short) (daddr >> 16);
+
+	printf("%x split into %x,%x\n", saddr, _saddr[0], _saddr[1]);
+	return tcp_sum_calc(tcp_len, _saddr, _daddr, (tcp_len%2), buf);
+}
