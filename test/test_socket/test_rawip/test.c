@@ -18,9 +18,7 @@
 
 
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
-#include <errno.h>
 #include <sys/socket.h>
 
 #include <arpa/inet.h>
@@ -29,12 +27,7 @@
 #include "tcp_header.h"
 #include "tcp_checksum.h"
 #include "types.h"
-
-#define PERROR(message)                                         \
-        do {                                                    \
-            printf(message);                                    \
-            printf(" errno:%d(%s)\n", errno, strerror(errno));  \
-        } while(0)
+#include "uerror.h"
 
 #define P 30001 /* lets flood the sendmail port */
 
