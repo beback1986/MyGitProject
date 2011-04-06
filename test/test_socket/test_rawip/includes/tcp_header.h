@@ -19,9 +19,24 @@
 #ifndef __TCP_HEADER_H
 #define __TCP_HEADER_H
 
-#ifndef __FAVOR_BSD
-#define __FAVOR_BSD	/* use bsd'ish tcp header */
+#ifdef __FAVOR_BSD
+#undef __FAVOR_BSD	/* use bsd'ish tcp header */
 #endif
 #include <netinet/tcp.h>
+
+#include "types.h"
+#include "uskbuff.h"
+
+static inline struct tcphdr *
+uskb_tcphdr(struct usk_buff *uskb)
+{
+	return (struct tcphdr *)uskb_transport_header(uskb);
+}
+
+
+/* Debug method, from dump.c */
+extern void
+tcphdr_dump(struct tcphdr *iph);
+
 
 #endif /* __TCP_HEADER_H */
