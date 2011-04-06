@@ -9,7 +9,7 @@
 
 
 int
-main(void)
+main(int argc, char *argv[])
 {
 	struct usk_buff *uskb;
 	struct iphdr *iph;

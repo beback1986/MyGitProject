@@ -18,20 +18,21 @@
  */
 
 #ifndef __USKBUFF_H
-#define __USKBUFF_H #include "types.h"
+#define __USKBUFF_H 
+
+#include "types.h"
 
 struct usk_buff {
-	u8	direct:1, /* 0:out,1:in */
-		unused:7;
-	union {
-		unsigned char *header;
-		unsigned char *buff; /* ONLY used in input package */
-	};
-	unsigned char *tail;
-	unsigned char *data;
-	unsigned int   header_len;
-	unsigned char *network_header;
-	unsigned char *transport_header;
+	u8		 direct:1, /* 0:out,1:in */
+			 unused:7;
+	unsigned char 	*header;
+	unsigned char 	*payload;
+	unsigned int   	 header_len,	/* Length of current header */
+			 payload_len,	/* Length of pure payload, do not change during transmission. */
+			 total_len,	/* header_len + payload_len */
+			 header_max;	/* max header length */
+	unsigned char 	*network_header;
+	unsigned char 	*transport_header;
 };
 
 

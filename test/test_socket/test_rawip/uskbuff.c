@@ -29,20 +29,20 @@ __uskb_alloc()
 	return (struct usk_buff *)uskb;
 }
 
-static inline strcut usk_buff *
+struct usk_buff *
 uskb_alloc_in()
 {
 	struct usk_buff *uskb;
-	uskb = __uskb_input();
+	uskb = __uskb_alloc();
 	uskb_set_direct(uskb, 1);
 	return uskb;
 }
 
-static inline strcut usk_buff *
+struct usk_buff *
 uskb_alloc_out(int header_size)
 {
 	struct usk_buff *uskb;
-	uskb = __uskb_input();
+	uskb = __uskb_alloc();
 	uskb_set_direct(uskb, 0);
 	return uskb;
 }
