@@ -28,11 +28,13 @@ struct usk_buff {
 	unsigned char 	*header;
 	unsigned char 	*payload;
 	unsigned int   	 header_len,	/* Length of current header */
-			 payload_len,	/* Length of pure payload, do not change during transmission. */
-			 total_len,	/* header_len + payload_len */
+			 payload_len,	/* Length of pure payload, 
+					 * do not change during transmission. */
 			 header_max;	/* max header length */
 	unsigned char 	*network_header;
 	unsigned char 	*transport_header;
+
+	struct uprotocol *proto;
 };
 
 
@@ -49,9 +51,9 @@ uskb_network_header(const struct usk_buff *uskb)
 }
 
 static inline void
-uskb_set_network_header(struct usk_buff *uskb, const int offset)
+uskb_set_network_header(struct usk_buff *uskb)
 {
-	uskb->network_header = uskb->header + offset;
+	uskb->network_header = uskb->header + uskb->header_len;
 }
 
 static inline unsigned char *
@@ -61,33 +63,43 @@ uskb_transport_header(const struct usk_buff *uskb)
 }
 
 static inline void
-uskb_set_transport_header(struct usk_buff *uskb, const int offset)
+uskb_set_transport_header(struct usk_buff *uskb)
 {
-	uskb->transport_header = uskb->network_header + offset;
+	uskb->transport_header = uskb->network_header + uskb->header_len;
 }
 
-static inline void
+/* in: grow and set header
+ * out: set header and group
+ */
+static inline int
 uskb_header_grow(struct usk_buff *uskb, const int len)
 {
+	if ((uskb->header_len + len) > uskb->header_max)
+		return -1;
 	uskb->header_len += len;
+	return 0;
 }
 
 static inline void
-uskb_set_buff(struct usk_buff *uskb, unsigned char *buff)
-{
-	uskb->buff = buff;
-}
-
-static inline void
-uskb_set_header(struct usk_buff *uskb, unsigned char *header_buff)
+uskb_set_header(struct usk_buff *uskb, const unsigned char *header_buff, const int max_len)
 {
 	uskb->header = header_buff;
+	uskb->header_max = len
+}
+
+static inline void
+uskb_set_payload(struct usk_buff *uskb, unsigned char *payload)
+{
+	uskb->payload = payload;
 }
 
 
 
 extern struct usk_buff *
-uskb_alloc();
+uskb_alloc_in();
+
+extern struct usk_buff *
+uskb_alloc_out(int header_size)
 
 extern void
 uskb_destroy(struct usk_buff *uskb);

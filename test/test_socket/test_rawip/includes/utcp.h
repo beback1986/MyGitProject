@@ -27,6 +27,11 @@
 #include "types.h"
 #include "uskbuff.h"
 
+extern static struct uprotocol utcp;
+
+extern int utcp_init(void);
+
+
 static inline struct tcphdr *
 uskb_tcphdr(struct usk_buff *uskb)
 {
