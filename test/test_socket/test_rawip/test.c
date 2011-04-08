@@ -23,9 +23,8 @@
 
 #include <arpa/inet.h>
 
-#include "ip_header.h"
-#include "tcp_header.h"
-#include "tcp_checksum.h"
+#include "uip.h"
+#include "utcp.h"
 #include "types.h"
 #include "uerror.h"
 

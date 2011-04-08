@@ -9,7 +9,7 @@ Description:
 
 #include <stdio.h>
 
-#include "tcp_checksum.h"
+#include "tcp.h"
 
 //#define CSUM_WORD(__word_16) ((((__word_16)<<8)&0xFF00)+(((__word_16)>>8)&0xFF))
 #define CSUM_WORD(__word_16) (__word_16)
