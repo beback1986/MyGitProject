@@ -3,7 +3,7 @@
  *
  *       Filename:  ureceiver.c
  *
- *    Description:  use raw ip to receive all kinds of messages.
+ *    Description:  receiver loop.
  *
  *        Version:  1.0
  *        Created:  04/07/2011 03:42:18 PM
