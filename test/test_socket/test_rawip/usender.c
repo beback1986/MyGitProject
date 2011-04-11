@@ -16,7 +16,10 @@
  * =====================================================================================
  */
 
-static sender_queue;
+#include "types.h"
+#include "queue.h"
+
+static struct queue sender_queue;
 
 int
 usender()

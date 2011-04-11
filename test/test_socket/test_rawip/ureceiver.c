@@ -19,11 +19,16 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
+#include "types.h"
+#include "uerror.h"
 #include "uskbuff.h"
 #include "uprotocol.h"
 #include "uip.h"
-#include "utcp.h"
-#include "uerror.h"
+
+#define RCV_BUFFER_SIZE 8192 /* Single packets are usually less than 8192 bytes. */
+#define RCV_BUFFER_COUNT 1024
+
+struct mempool *rcv_mempool;
 
 
 /* Initial all header pointer in uskb. */
@@ -57,21 +62,28 @@ int
 ureceiver()
 {
 	struct usk_buff *uskb;
-	struct iphdr *iph;
-	struct tcphdr *tcph;
+	void 	*buffer;
 
 	int fd = socket (PF_INET, SOCK_RAW, IPPROTO_TCP);
 	if (fd < 0) {
 		PERROR("Can not create socket!");
 		return -1;
 	}
-	unsigned char buffer[8192]; /* single packets are usually less than 8192 bytes */
-	while (recv(fd, buffer, 8192, 0) > 0) {
+	while (1) {
+		buffer = mempool_alloc(rcv_mempool);
+		if (recv(fd, buffer, RCV_BUFFER_SIZE, 0) < 0)
+			PERROR("Receive error!");
 		uskb = uskb_alloc_in();
-		uskb_set_header(uskb, buffer, 8192);
+		uskb_set_header(uskb, buffer, RCV_BUFFER_SIZE);
 		do_rcv(uskb);
 	}
 	close(fd);
 
 	return 0;
+}
+
+void
+ureceiver_init()
+{
+	rcv_mempool = mempool_create("rcv_mempool", RCV_BUFFER_SIZE, RCV_BUFFER_COUNT);
 }

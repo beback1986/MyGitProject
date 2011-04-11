@@ -23,16 +23,16 @@
 #include "types.h"
 
 struct usk_buff {
-	u8		 direct:1, /* 0:out,1:in */
-			 unused:7;
-	unsigned char 	*header;
-	unsigned char 	*payload;
-	unsigned int   	 header_len,	/* Length of current header */
-			 payload_len,	/* Length of pure payload, 
-					 * do not change during transmission. */
-			 header_max;	/* max header length */
-	unsigned char 	*network_header;
-	unsigned char 	*transport_header;
+	u8	 direct:1, /* 0:out,1:in */
+		 unused:7;
+	void 	*header;
+	void 	*payload;
+	u16   	 header_len,	/* Length of current header */
+		 payload_len,	/* Length of pure payload, 
+				 * do not change during transmission. */
+		 header_max;	/* max header length */
+	void 	*network_header;
+	void 	*transport_header;
 
 	struct uprotocol *proto;
 };
@@ -44,7 +44,7 @@ struct usk_buff {
 
 
 /* Inline functions to set properties of usk_buff */
-static inline unsigned char *
+static inline void *
 uskb_network_header(const struct usk_buff *uskb)
 {
 	return uskb->network_header;
@@ -56,7 +56,7 @@ uskb_set_network_header(struct usk_buff *uskb)
 	uskb->network_header = uskb->header + uskb->header_len;
 }
 
-static inline unsigned char *
+static inline void *
 uskb_transport_header(const struct usk_buff *uskb)
 {
 	return uskb->transport_header;
@@ -81,14 +81,14 @@ uskb_header_grow(struct usk_buff *uskb, const int len)
 }
 
 static inline void
-uskb_set_header(struct usk_buff *uskb, const unsigned char *header_buff, const int max_len)
+uskb_set_header(struct usk_buff *uskb, const void *header_buff, const int max_len)
 {
 	uskb->header = header_buff;
 	uskb->header_max = len
 }
 
 static inline void
-uskb_set_payload(struct usk_buff *uskb, unsigned char *payload)
+uskb_set_payload(struct usk_buff *uskb, const void *payload)
 {
 	uskb->payload = payload;
 }
@@ -102,7 +102,7 @@ extern struct usk_buff *
 uskb_alloc_out(int header_size)
 
 extern void
-uskb_destroy(struct usk_buff *uskb);
+uskb_free(struct usk_buff *uskb);
 
 
 #endif /* __USKBUFF_H */
