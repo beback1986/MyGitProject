@@ -92,15 +92,15 @@ struct uprotocol {
 	struct list_head	node;
 
 	/* Hooks for lower layer */
-	int		(*header_len)(struct usk_buff *uskb);
+/*MUST*/int		(*header_len)(struct usk_buff *uskb); 
 
-	int		(*handler)(struct usk_buff *uskb);
+/*MUST*/int		(*handler)(struct usk_buff *uskb);
 };
 
 extern int 
-protocol_register(struct uprotocol *proto);
+uprotocol_register(struct uprotocol *proto);
 
 extern struct uprotocol *
-protocol_find(int proto_num);
+uprotocol_find(int proto_num);
 
 #endif /* __UPROTOCOL_H */

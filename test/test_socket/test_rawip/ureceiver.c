@@ -37,6 +37,7 @@ do_rcv(struct usk_buff *uskb)
 {
 	struct uprotocol *proto;
 	struct iphdr *iph;
+	int ret;
 
 	/* At this moment, one thing is for sure: This package MUST be 
 	 * an datagram of IP. So we can point out header for both network
@@ -54,6 +55,8 @@ do_rcv(struct usk_buff *uskb)
 
 	if (!uskb_header_grow(proto->header_len(uskb)))
 		return -1;
+
+	ret = ip_input(uskb);
 
 	return 0;
 }

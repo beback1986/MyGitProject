@@ -32,10 +32,19 @@ utcp_header_len(struct usk_buff *uskb)
 	return (tcph->doff * 4);
 }
 
+int
+utcp_handler(struct usk_buff *uskb)
+{
+	struct tcphdr *tcph;
+	tcph = uskb_tcphdr(uskb);
+	return 0;
+}
+
 static struct uprotocol utcp {
 	.proto_num	= 6,
 	.name		= "TCP",
-	.header_len	=
+	.header_len	= utcp_header_len,
+	.handler	= utcp_handler,
 };
 
 int

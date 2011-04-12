@@ -21,9 +21,25 @@
 #define __USOCK_H
 
 #include "types.h"
+#include "uskbuff.h"
 
 struct usock {
-	int mode;
+	int usk_mode;
+
+	struct usk_buff_head *usk_write_queue;
+	struct usk_buff_head *usk_receive_queue;
 };
+
+static inline void
+usk_write_queu_append(struct usock *usk, struct usk_buff *uskb)
+{
+	uskb_enqueue_tail(usk->usk_write_queue, uskb);
+}
+
+static inline void
+usk_receive_queue_append(struct usock *usk, struct usk_buff *uskb)
+{
+	uskb_enqueue_tail(usk->usk_receive_queue, uskb);
+}
 
 #endif /* __USOCK_H */

@@ -17,11 +17,16 @@
  */
 
 #include "types.h"
-#include "queue.h"
+#include "btqueue.h"
+#include "uskbuff.h"
 
-static struct queue sender_queue;
+static struct btqueue sender_queue;
 
-int
-usender()
+void
+usender(void)
 {
+	struct usk_buff *uskb;
+	while (1) {
+		dequeue(uskb, sender_queue, q_send);
+	}
 }

@@ -3,7 +3,7 @@
  *
  *       Filename:  ip_header.h
  *
- *    Description:  all IP header related structure & macro.
+ *    Description:  all IP header related structure & macro & externed functions.
  *
  *        Version:  1.0
  *        Created:  03/31/2011 03:23:18 PM
@@ -37,6 +37,12 @@ uskb_iphdr(struct usk_buff *uskb)
 	return (struct iphdr *)uskb_network_header(uskb);
 }
 
+/* Interfaces to upper and lower layers. */
+int
+ip_output(struct usk_buff *uskb);
+
+int
+ip_input(struct usk_buff *uskb);
 
 
 /* Debug method, from dump.c */

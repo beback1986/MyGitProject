@@ -20,9 +20,24 @@
 #ifndef __USKBUFF_H
 #define __USKBUFF_H 
 
+#include <pthread.h>
+
 #include "types.h"
+#include "btqueue.h"
+
+struct usk_buff_head {
+	struct usk_buff  *prev;
+	struct usk_buff  *next;
+	u16		 qlen;
+	pthread_mutext_t loc;
+};
 
 struct usk_buff {
+	/* Used to join in write_queue and receive queue.
+	 * This 2 field should always at top. */
+	struct usk_buff *prev;
+	struct usk_buff *next;
+
 	u8	 direct:1, /* 0:out,1:in */
 		 unused:7;
 	void 	*header;
@@ -34,8 +49,78 @@ struct usk_buff {
 	void 	*network_header;
 	void 	*transport_header;
 
-	struct uprotocol *proto;
+	/* For queue this uskb to send queue, used ONLY in usender. */
+	struct btqueue_node q_send;
+
+	struct uprotocol    *proto;
 };
+
+/* uskb queue related operations. */
+static inline void
+uskb_queue_init(struct uskb_buff_head *list)
+{
+	list->prev = list->next = list;
+	pthread_mutex_init(&list->loc, NULL);
+	list->qlen = 0;
+}
+
+static inline void
+__uskb_insert(struct uskb_buff_head *list,
+	      struct uskb_buff      *new,
+	      struct uskb_buff      *prev,
+	      struct uskb_buff      *next)
+{
+	new->prev = prev;
+	new->next = next;
+	prev->next = next->prev = new;
+	list->qlen ++;
+}
+
+static inline struct usk_buff *
+__uskb_delete(struct uskb_buff_head *list,
+	      struct uskb_buff      *old)
+{
+	if (old == ((struct uskb_buff *)list))
+		return NULL;
+	old->prev->next = old->next;
+	old->next->prev = old->prev;
+	old->next = old->prev = NULL;
+	list->qlen --;
+	return old;
+}
+
+
+static inline void
+__uskb_enqueue_tail(struct usk_buff_head *list, struct usk_buff *new)
+{
+	__uskb_insert(list, new, list, list->prev);
+}
+
+static inline struct usk_buff *
+__uskb_dequeue_head(struct usk_buff_head *list)
+{
+	return __uskb_delete(list, list->next);
+}
+
+static inline void
+uskb_enqueue_tail(struct usk_buff_head *list, struct usk_buff *new)
+{
+	pthread_mutex_lock(&list->loc);
+	__uskb_enqueue_tail(list, new);
+	pthread_mutex_unlock(&list->loc);
+}
+
+static inline struct usk_buff *
+uskb_dequeue_head(struct usk_buff_head *list)
+{
+	struct usk_buff *head;
+
+	pthread_mutex_lock(&list->loc);
+	head = __uskb_dequeue_head(list);
+	pthread_mutex_unlock(&list->loc);
+
+	return head;
+}
 
 
 #define uskb_direct(uskb) ((uskb)->direct)
