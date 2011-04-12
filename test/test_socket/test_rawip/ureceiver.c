@@ -66,8 +66,9 @@ ureceiver()
 {
 	struct usk_buff *uskb;
 	void 	*buffer;
+	int fd;
 
-	int fd = socket (PF_INET, SOCK_RAW, IPPROTO_TCP);
+	fd = socket (PF_INET, SOCK_RAW, IPPROTO_TCP);
 	if (fd < 0) {
 		PERROR("Can not create socket!");
 		return -1;
@@ -86,7 +87,7 @@ ureceiver()
 }
 
 void
-ureceiver_init()
+ureceiver_init(void)
 {
 	rcv_mempool = mempool_create("rcv_mempool", RCV_BUFFER_SIZE, RCV_BUFFER_COUNT);
 }

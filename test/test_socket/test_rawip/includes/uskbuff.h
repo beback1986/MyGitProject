@@ -52,6 +52,8 @@ struct usk_buff {
 	/* For queue this uskb to send queue, used ONLY in usender. */
 	struct btqueue_node q_send;
 
+	struct sockaddr     *sin;
+
 	struct uprotocol    *proto;
 };
 

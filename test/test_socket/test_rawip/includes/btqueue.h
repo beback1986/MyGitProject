@@ -45,10 +45,10 @@ struct btqueue {
 	atomic_t	    len;
 };
 
-#define BTQUEUE_INIT(btq)							\
+#define BTQUEUE_INIT(btq)						\
 	do {								\
-		atomic_init(&btq->len);					\
-		pthread_mutex_init(&btq->loc);				\
+		atomic_init(&(btq)->len);				\
+		pthread_mutex_init(&(btq)->loc);			\
 	} while(0)
 
 /* TODO: Implemet lock free enqueue! */
@@ -63,12 +63,12 @@ struct btqueue {
 		atomic_inc(&btq->len);					\
 	} while(0)
 
-#define dequeue(ptr, btq, member)					\
-	do {								\
-		atomic_dec(btq->len);					\
-									\
-		ptr = btqueue_entry(btq->head, typeof(*ptr), member);	\
-		btq->head = btq->head->next;				\
-	} while(0)
+#define dequeue(btq, member)	({					\
+	atomic_dec(&btq->len);					\
+	btqueue_node *__btn__ = btq->head;			\
+	btq->head = btq->head->next;				\
+	__btn__->next = NULL;					\
+	btqueue_entry(__btn__, typeof(*ptr), member);})
+	
 
 #endif /* __BTQUEUE_H */
