@@ -52,23 +52,27 @@ struct btqueue {
 	} while(0)
 
 /* TODO: Implemet lock free enqueue! */
-#define enqueue(btq, node)						\
+#define btqueue_append(btq, node)					\
 	do {								\
-		node->next = NULL;					\
-		pthread_mutex_lock(&btq->loc);				\
-		btq->tail->next = node;					\
-		btq->tail = node;					\
-		pthread_mutex_unlock(&btq->loc);			\
+		(node)->next = NULL;					\
+		pthread_mutex_lock(&(btq)->loc);			\
+		(btq)->tail->next = (node);				\
+		(btq)->tail = (node);					\
+		pthread_mutex_unlock(&(btq)->loc);			\
 									\
-		atomic_inc(&btq->len);					\
+		atomic_inc(&(btq)->len);				\
 	} while(0)
 
-#define dequeue(btq, member)	({					\
-	atomic_dec(&btq->len);					\
-	btqueue_node *__btn__ = btq->head;			\
-	btq->head = btq->head->next;				\
+#define btqueue_pop(btq, member)	({			\
+	atomic_dec(&(btq)->len);				\
+								\
+	btqueue_node *__btn__ = (btq)->head;			\
+	(btq)->head = (btq)->head->next;			\
 	__btn__->next = NULL;					\
 	btqueue_entry(__btn__, typeof(*ptr), member);})
-	
+
+#define btqueue_len(btq)	\
+	(atomic_val(&(btq)->len))
+
 
 #endif /* __BTQUEUE_H */

@@ -20,7 +20,33 @@
 #include "uip.h"
 
 int
-ip_output(struct usk_buff *uskb)
+uip_header_len(struct usk_buff *uskb)
+{
+	struct iphdr *iph;
+
+	iph = uskb_iphdr(uskb);
+	if (!iph)
+		return 0;
+
+	return (iph->hdr * 4);
+}
+
+struct uprotocol *
+uip_find_proto(struct usk_buff *uskb)
+{
+	struct iphdr *iph;
+	struct uprotocol *proto;
+
+	iph = uskb_iphdr(uskb);
+	if (!iph)
+		return 0;
+	proto = uprotocol_find(iph->protocol);
+
+	return proto;
+}
+
+int
+uip_output(struct usk_buff *uskb)
 {
 	struct iphdr     *iph;
 	struct uprotocol *proto;
@@ -39,6 +65,6 @@ ip_output(struct usk_buff *uskb)
 }
 
 int
-ip_input(struct usk_buff *uskb)
+uip_input(struct usk_buff *uskb)
 {
 }

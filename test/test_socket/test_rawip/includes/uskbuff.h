@@ -20,6 +20,7 @@
 #ifndef __USKBUFF_H
 #define __USKBUFF_H 
 
+#include <string.h>
 #include <pthread.h>
 
 #include "types.h"
@@ -52,10 +53,22 @@ struct usk_buff {
 	/* For queue this uskb to send queue, used ONLY in usender. */
 	struct btqueue_node q_send;
 
-	struct sockaddr     *sin;
+	/* ONLY for usender use. Transport protocol provide port num.
+	 * Network protocol provide addr. */
+	struct sockaddr_in  sin;
 
 	struct uprotocol    *proto;
 };
+
+/* sockaddr related operations. */
+#define uskb_sin_set_port(uskb, port)	\
+	do {(uskb)->sin.port = (port);} while(0)
+
+#define uskb_sin_set_addr(uskb, addr)	\
+	do {(uskb)->sin.sin_addr.s_addr = (addr);} while(0)
+
+#define uskb_sin(uskb)	\
+	(&(uskb)->sin)
 
 /* uskb queue related operations. */
 static inline void
@@ -131,11 +144,8 @@ uskb_dequeue_head(struct usk_buff_head *list)
 
 
 /* Inline functions to set properties of usk_buff */
-static inline void *
-uskb_network_header(const struct usk_buff *uskb)
-{
-	return uskb->network_header;
-}
+#define uskb_network_header(uskb)	\
+	((uskb)->network_header)
 
 static inline void
 uskb_set_network_header(struct usk_buff *uskb)
@@ -143,11 +153,8 @@ uskb_set_network_header(struct usk_buff *uskb)
 	uskb->network_header = uskb->header + uskb->header_len;
 }
 
-static inline void *
-uskb_transport_header(const struct usk_buff *uskb)
-{
-	return uskb->transport_header;
-}
+#define uskb_transport_header(uskb)	\
+	((uskb)->transport_header)
 
 static inline void
 uskb_set_transport_header(struct usk_buff *uskb)
@@ -167,6 +174,9 @@ uskb_header_grow(struct usk_buff *uskb, const int len)
 	return 0;
 }
 
+#define uskb_total_len(uskb)	\
+	((uskb)->header_len + (uskb)->payload_len)
+
 static inline void
 uskb_set_header(struct usk_buff *uskb, const void *header_buff, const int max_len)
 {
@@ -178,6 +188,36 @@ static inline void
 uskb_set_payload(struct usk_buff *uskb, const void *payload)
 {
 	uskb->payload = payload;
+}
+
+/* GNU style void * operation. 
+ * (void *)++ == (char *)++ */
+#define __uskb_header(uskb)								\
+	((uskb)->direct ?								\
+	        ((uskb)->header)+(uskb)->header_max-(uskb)->header_len	\
+	       :(uskb)->header)
+
+static inline int
+uskb_header_cpy(struct usk_buff *uskb, void *buff)
+{
+	memcpy(buff, __uskb_header(uskb), uskb->header_len);
+	return uskb->header_len;
+}
+
+static inline int
+uskb_payload_cpy(struct usk_buff *uskb, void *buff)
+{
+	memcpy(buff, uskb->payload, uskb->payload_len);
+	return uskb->payload_len;
+}
+
+static inline int
+uskb_datagram_cpy(struct usk_buff *uskb, void *buff)
+{
+	int len;
+	len = uskb_header_cpy(uskb, buff);
+	/* GNU style void * operation. */
+	len += uskb_payload_cpy(uskb, buff+len);
 }
 
 

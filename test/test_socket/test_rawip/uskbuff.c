@@ -26,6 +26,7 @@ __uskb_alloc()
 {
 	struct usk_buff *uskb;
 	uskb = calloc(1, sizeof(struct usk_buff));
+	uskb->sin.sin_family = AF_INET;
 	return (struct usk_buff *)uskb;
 }
 

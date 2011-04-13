@@ -31,18 +31,21 @@
 #include "uskbuff.h"
 
 
-static inline struct iphdr *
-uskb_iphdr(struct usk_buff *uskb)
-{
-	return (struct iphdr *)uskb_network_header(uskb);
-}
+#define uskb_iphdr(uskb)	\
+	((struct iphdr *)uskb_network_header((uskb)))
 
 /* Interfaces to upper and lower layers. */
-int
-ip_output(struct usk_buff *uskb);
+extern int
+uip_header_len(struct usk_buff *uskb);
 
-int
-ip_input(struct usk_buff *uskb);
+extern struct uprotocol *
+uip_find_proto(struct usk_buff *uskb)
+
+extern int
+uip_output(struct usk_buff *uskb);
+
+extern int
+uip_input(struct usk_buff *uskb);
 
 
 /* Debug method, from dump.c */

@@ -23,37 +23,55 @@
 #include "uskbuff.h"
 #include "uip.h"
 
-#include <string.h>
-/* Build a sockaddr_in object. NOTE: This macro does not take 
- * the responsibility to translate to net bit order */
-#define BUILD_SIN(sin, port, addr)			\
-	do {						\
-		memset(sin, 0, sizeof(*sin));		\
-		sin->sin_family = AF_INET;		\
-		sin->port = port;			\
-		sin->sin_addr.s_addr = addr;		\
-	} while(0)
+static struct btqueue snd_queue;
 
-static struct btqueue sender_queue;
+/* Control send queue len.
+ * Use sockoptset() & sockoptget() to operate this value. 
+ */
+static u32 snd_queue_max;
+
+int
+usender_queue(struct usk_buff *uskb)
+{
+	if (btqueue_len(snd_queue) >= snd_queue_max);
+		goto full;
+
+	btqueue_append(snd_queue, uskb->q_send);
+
+	return 0;
+
+full:
+	return -1;
+}
 
 int
 do_send(int fd, struct usk_buff *uskb)
 {
 	struct sockaddr_in *sin;
-	struct iphdr *iph;
+	void *datagram;
+	int  len;
 
-	sin = calloc(1, sizeof(struct sockaddr_in));
-	if (!sin)
+	len = uskb_total_len(uskb);
+	sin = uskb_sin(uskb);
+
+	datagram = malloc(len);
+	if (!datagram)
 		goto wait_for_memory;
 
-	iph = uskb_iphdr(uskb);
-	BUILD_SIN(sin, );
+	uskb_datagram_cpy(uskb, datagram);
 
-	sendto(fd, datagrame, len, flags, sin, sizeof(struct sockaddr));
+	if (sendto(fd,
+		   datagram,
+		   len,
+		   flags,
+		   sin, 
+		   sizeof(struct sockaddr_in)) < 0)
+		goto failed;
 
 	return 0;
 
 wait_for_memory:
+failed:
 	return -1;
 }
 
@@ -66,7 +84,7 @@ usender(void)
 
 	struct usk_buff *uskb;
 	while (1) {
-		uskb = dequeue(sender_queue, q_send);
+		uskb = btqueue_pop(snd_queue, q_send);
 		do_send(fd, uskb);
 	}
 
@@ -76,5 +94,6 @@ usender(void)
 void
 usender_init(void)
 {
-	BTQUEUE_INIT(&sender_queue);
+	BTQUEUE_INIT(&snd_queue);
+	snd_queue_max = 4096;
 }

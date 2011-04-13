@@ -36,29 +36,36 @@ int
 do_rcv(struct usk_buff *uskb)
 {
 	struct uprotocol *proto;
-	struct iphdr *iph;
 	int ret;
+	int len;
 
 	/* At this moment, one thing is for sure: This package MUST be 
 	 * an datagram of IP. So we can point out header for both network
 	 * layer and transport layer. */
 	uskb_set_network_header(uskb, 0);
-	iph = uskb_iphdr(uskb);
-	uskb_header_grow(iph->ihl * 4);
+	len = uip_header_len(uskb);
+	if (!len || uskb_header_grow(len))
+		goto discard;
+
 	uskb_set_transport_header(uskb);
 
-	proto = protocol_find(iph->protocol);
+	proto = uip_find_proto(uskb);
 	if (!proto)
-		return -1;
+		goto unkown_proto;
+
+	len = proto->header_len(uskb);
+	if (!len || uskb_header_grow(len))
+		goto discard;
 
 	uskb->proto = proto;
 
-	if (!uskb_header_grow(proto->header_len(uskb)))
-		return -1;
-
-	ret = ip_input(uskb);
+	ret = uip_input(uskb);
 
 	return 0;
+
+unkown_proto:
+discard:
+	return -1;
 }
 
 int

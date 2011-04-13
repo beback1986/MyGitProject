@@ -32,11 +32,8 @@ extern static struct uprotocol utcp;
 extern int utcp_init(void);
 
 
-static inline struct tcphdr *
-uskb_tcphdr(struct usk_buff *uskb)
-{
-	return (struct tcphdr *)uskb_transport_header(uskb);
-}
+#define uskb_tcphdr(uskb)	\
+	((struct tcphdr *)uskb_transport_header((uskb)))
 
 
 /* TCP check sum related functions. */

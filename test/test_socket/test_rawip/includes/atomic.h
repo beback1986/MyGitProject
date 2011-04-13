@@ -38,6 +38,9 @@ atomic_init(atomic_t *atom)
 	pthread_cond_init(atom->data_cond, NULL);
 }
 
+#define atomic_val(atom)	\
+	((atom)->data)
+
 static inline void
 atomic_inc(atomic_t *atom)
 {
