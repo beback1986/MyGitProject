@@ -1,0 +1,6 @@
+
+* Add lock utils, liberate from pthread
+
+* Function of init.c?
+
+* Move functions in tcp_checksum.c to utcp.c

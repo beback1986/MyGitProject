@@ -11,7 +11,6 @@ Description:
 
 #include "tcp.h"
 
-//#define CSUM_WORD(__word_16) ((((__word_16)<<8)&0xFF00)+(((__word_16)>>8)&0xFF))
 #define CSUM_WORD(__word_16) (__word_16)
 
 u16 tcp_sum_calc(u16 len_tcp, u16 src_addr[],u16 dest_addr[], int padding, u16 buff[])
@@ -80,6 +79,5 @@ tcp_csum(u32 saddr, u32 daddr, u16 tcp_len, u16 *buf)
 	_daddr[0] = (unsigned short) (daddr & 0xffff);
 	_daddr[1] = (unsigned short) (daddr >> 16);
 
-	printf("%x split into %x,%x\n", saddr, _saddr[0], _saddr[1]);
 	return tcp_sum_calc(tcp_len, _saddr, _daddr, (tcp_len%2), buf);
 }

@@ -16,12 +16,13 @@
  * =====================================================================================
  */
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <sys/socket.h>
 
 #include "types.h"
 #include "btqueue.h"
 #include "uskbuff.h"
-#include "uip.h"
 
 static struct btqueue snd_queue;
 
@@ -45,7 +46,7 @@ full:
 }
 
 int
-do_send(int fd, struct usk_buff *uskb)
+__do_send(int fd, struct usk_buff *uskb)
 {
 	struct sockaddr_in *sin;
 	void *datagram;
@@ -75,20 +76,37 @@ failed:
 	return -1;
 }
 
-void
+int
 usender(void)
 {
+	struct usk_buff *uskb;
+	int opt;
 	int fd;
 
 	fd = socket (PF_INET, SOCK_RAW, IPPROTO_TCP);
+	if (fd < 0) {
+		PERROR("Can not create socket!");
+		return -1;
+	}
 
-	struct usk_buff *uskb;
+	opt = 1;
+	if (setsockopt (fd, IPPROTO_IP, IP_HDRINCL, &opt, sizeof (opt)) < 0) {
+		PERROR("Can not set HDRINCL!");
+		return -1;
+	}
+
 	while (1) {
 		uskb = btqueue_pop(snd_queue, q_send);
-		do_send(fd, uskb);
+		__do_send(fd, uskb);
 	}
 
 	close(fd);
+	return 0;
+}
+
+int
+usender_start(void)
+{
 }
 
 void

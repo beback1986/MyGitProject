@@ -50,5 +50,6 @@ static struct uprotocol utcp {
 int
 utcp_init(void)
 {
+	uprotocol_register(&utcp);
 	return 0;
 }

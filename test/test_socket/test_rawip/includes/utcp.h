@@ -27,9 +27,8 @@
 #include "types.h"
 #include "uskbuff.h"
 
-extern static struct uprotocol utcp;
-
-extern int utcp_init(void);
+extern int 
+utcp_init(void);
 
 
 #define uskb_tcphdr(uskb)	\
@@ -76,9 +75,6 @@ static inline __sum16 csum_tcpudp_magic(__be32 saddr, __be32 daddr,
         return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
 }
 #endif
-
-extern u16 
-tcp_sum_calc(u16 len_tcp, u16 src_addr[], u16 dest_addr[], int padding, u16 buff[]);
 
 extern unsigned short
 tcp_csum(u32 saddr, u32 daddr, u16 tcp_len, u16 *buf);

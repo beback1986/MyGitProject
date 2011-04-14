@@ -34,6 +34,10 @@
 #define uskb_iphdr(uskb)	\
 	((struct iphdr *)uskb_network_header((uskb)))
 
+u16
+ip_csum (u16 *buf, int nwords);
+
+
 /* Interfaces to upper and lower layers. */
 extern int
 uip_header_len(struct usk_buff *uskb);

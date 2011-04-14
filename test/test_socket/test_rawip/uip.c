@@ -16,9 +16,23 @@
  * =====================================================================================
  */
 
+#include "types.h"
 #include "uprotocol.h"
 #include "uip.h"
 
+/* IP header checksums related. */
+u16
+ip_csum (u16 *buf, int nwords)
+{
+	unsigned long sum;
+	for (sum = 0; nwords > 0; nwords--)
+		sum += *buf++;
+	sum = (sum >> 16) + (sum & 0xffff);
+	sum += (sum >> 16);
+	return ~sum;
+}
+
+/* Interfaces to outer world. */
 int
 uip_header_len(struct usk_buff *uskb)
 {
@@ -48,6 +62,11 @@ uip_find_proto(struct usk_buff *uskb)
 int
 uip_output(struct usk_buff *uskb)
 {
+}
+
+int
+uip_input(struct usk_buff *uskb)
+{
 	struct iphdr     *iph;
 	struct uprotocol *proto;
 	int ret;
@@ -62,9 +81,4 @@ uip_output(struct usk_buff *uskb)
 	ret = proto->handler(uskb);
 
 	return ret;
-}
-
-int
-uip_input(struct usk_buff *uskb)
-{
 }

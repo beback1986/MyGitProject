@@ -22,7 +22,7 @@
 static struct uprotocol *proto_list[MAX_PROTO_NUM];
 
 int 
-protocol_register(struct uprotocol *proto)
+uprotocol_register(struct uprotocol *proto)
 {
 	if (proto_list[proto->proto_num])
 		return -1;
@@ -32,7 +32,7 @@ protocol_register(struct uprotocol *proto)
 }
 
 struct uprotocol *
-protocol_find(int proto_num)
+uprotocol_find(int proto_num)
 {
 	if (proto_num < 0 || proto_num > MAX_PROTO_NUM)
 		return NULL;
