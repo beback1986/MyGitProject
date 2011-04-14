@@ -42,11 +42,12 @@
 
 #include <pthread.h>
 
-typedef void *(*task_routine_t) (void *arg);
+typedef void *(*task_routine_t) (void *t);
 
 struct task {
 	pthread_t 	tid;		/* Thread id. */
 	task_routine_t 	rt;
+	int		status;		/* The status of belong task. */
 	void 		*arg;
 	void 		*ret;
 };

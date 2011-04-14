@@ -17,6 +17,7 @@
  */
 
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "task.h"
 
@@ -39,3 +40,22 @@ task_start(struct task *t)
 {
 	return pthread_create(&t->tid, NULL, t->rt, t->arg);
 }
+
+int
+task_stop(struct task *t)
+{
+	return pthread_kill(t->tid, SIGTERM);
+}
+
+int
+task_wait(struct task *t)
+{
+	return pthread_join(t->tid, NULL);
+}
+
+int
+task_timewait(struct task *t)
+{
+	return -1;
+}
+

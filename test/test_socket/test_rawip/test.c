@@ -18,15 +18,9 @@
 
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <sys/socket.h>
 
-#include <arpa/inet.h>
-
-#include "uip.h"
-#include "utcp.h"
-#include "types.h"
-#include "uerror.h"
+#include "task.h"
+#include "transport.h"
 
 #if 0	//backup some useful thing.
 #define P 30001 /* lets flood the sendmail port */
@@ -67,16 +61,31 @@
 int 
 main(int argc, char *argv[])
 {
+	struct task *rcv_task,
+		    *snd_task;
+
 	utcp_init();
-
 	usender_init();
-
 	ureceiver_init();
 
 
-	ureceiver_start();
+	rcv_task = ureceiver_start();
+	if (!rcv_task)
+		goto rcv_task_fail;
+	snd_task = usender_start();
+	if (!snd_task)
+		goto snd_task_fail;
 
-	usender_start();
+	task_wait(rcv_task);
+	task_wait(snd_task);
+
+	printf("receive task return %d\n", task_ret_get(rcv_task, int));
+	printf("send task return %d\n", task_ret_get(snd_task, int));
 
 	return 0;
+
+snd_task_fail:
+	task_stop(rcv_task);
+rcv_task_fail:
+	return -1;
 }

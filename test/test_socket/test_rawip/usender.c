@@ -21,6 +21,9 @@
 #include <sys/socket.h>
 
 #include "types.h"
+#include "uerror.h"
+#include "task.h"
+
 #include "btqueue.h"
 #include "uskbuff.h"
 
@@ -76,23 +79,30 @@ failed:
 	return -1;
 }
 
-int
-usender(void)
+void *
+usender(void *t)
 {
+	struct task *snd_task;
 	struct usk_buff *uskb;
-	int opt;
+	int sock_opt;
 	int fd;
+	int *ret;
+
+	snd_task = task_get(t);
+	ret = malloc(sizeof(int));
 
 	fd = socket (PF_INET, SOCK_RAW, IPPROTO_TCP);
 	if (fd < 0) {
 		PERROR("Can not create socket!");
-		return -1;
+		*ret = -1;
+		goto out;
 	}
 
-	opt = 1;
-	if (setsockopt (fd, IPPROTO_IP, IP_HDRINCL, &opt, sizeof (opt)) < 0) {
+	sock_opt = 1;
+	if (setsockopt (fd, IPPROTO_IP, IP_HDRINCL, &sock_opt, sizeof (sock_opt)) < 0) {
 		PERROR("Can not set HDRINCL!");
-		return -1;
+		*ret = -1;
+		goto out;
 	}
 
 	while (1) {
@@ -101,12 +111,24 @@ usender(void)
 	}
 
 	close(fd);
-	return 0;
+	*ret = 0;
+out:
+	task_ret_set(snd_task, ret);
+	return NULL;
 }
 
-int
+struct task *
 usender_start(void)
 {
+	struct task *snd_task;
+
+	snd_task = task_create(usender);
+
+	/* It could return a NULL when failed.
+	 * So the caller should deal with it. */
+	task_start(snd_task);
+
+	return snd_task;
 }
 
 void

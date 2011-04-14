@@ -22,6 +22,8 @@
 #include "types.h"
 #include "mempool.h"
 #include "uerror.h"
+#include "task.h"
+
 #include "uskbuff.h"
 #include "uprotocol.h"
 #include "uip.h"
@@ -65,24 +67,31 @@ discard:
 	return -1;
 }
 
-int
-ureceiver()
+void *
+ureceiver(void *t)
 {
+	struct task *rcv_task;
 	struct usk_buff *uskb;
 	void *buffer;
-	int opt;
+	int sock_opt;
 	int fd;
+	int *ret;
+
+	rcv_task = task_get(t);
+	ret = malloc(sizeof(int));
 
 	fd = socket (PF_INET, SOCK_RAW, IPPROTO_TCP);
 	if (fd < 0) {
 		PERROR("Can not create socket!");
-		return -1;
+		*ret = -1;
+		goto out;
 	}
 
-	opt = 1;
-	if(setsockopt (fd, IPPROTO_IP, IP_HDRINCL, &opt, sizeof (opt)) < 0){
+	sock_opt = 1;
+	if(setsockopt (fd, IPPROTO_IP, IP_HDRINCL, &sock_opt, sizeof (sock_opt)) < 0){
 		PERROR("Can not set HDRINCL!");
-		return -1;
+		*ret = -1;
+		goto out;
 	}
 
 	while (1) {
@@ -95,14 +104,24 @@ ureceiver()
 	}
 	close(fd);
 
-	return 0;
+	*ret = 0;
+out:
+	task_ret_set(rcv_task, ret);
+	return NULL;
 }
 
-int
+struct task *
 ureceiver_start(void)
 {
-	thread_t
-	ret = pthread_create(&th_dec_id[i], NULL, nihao, (void *)i);
+	struct task *rcv_task;
+
+	rcv_task = task_create(ureceiver);
+
+	/* It could return a NULL when failed.
+	 * So the caller should deal with it. */
+	task_start(rcv_task);
+
+	return rcv_task;
 }
 
 void
