@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 
 #include "types.h"
@@ -27,6 +28,7 @@
 #include "uskbuff.h"
 #include "uprotocol.h"
 #include "uip.h"
+#include "utransport.h"
 
 static struct mempool *rcv_mempool;
 
@@ -41,9 +43,9 @@ __do_rcv(struct usk_buff *uskb)
 	/* At this moment, one thing is for sure: This package MUST be 
 	 * an datagram of IP. So we can point out header for both network
 	 * layer and transport layer. */
-	uskb_set_network_header(uskb, 0);
+	uskb_set_network_header(uskb);
 	len = uip_header_len(uskb);
-	if (!len || uskb_header_grow(len))
+	if (!len || uskb_header_grow(uskb, len))
 		goto discard;
 
 	uskb_set_transport_header(uskb);
@@ -53,7 +55,7 @@ __do_rcv(struct usk_buff *uskb)
 		goto unkown_proto;
 
 	len = proto->header_len(uskb);
-	if (!len || uskb_header_grow(len))
+	if (!len || uskb_header_grow(uskb, len))
 		goto discard;
 
 	uskb->proto = proto;
@@ -76,6 +78,7 @@ ureceiver(void *t)
 	int sock_opt;
 	int fd;
 	int *ret;
+	int count = 0;
 
 	rcv_task = task_get(t);
 	ret = malloc(sizeof(int));
@@ -95,6 +98,8 @@ ureceiver(void *t)
 	}
 
 	while (1) {
+		count++;
+		printf("rcv %d package\n", count);
 		buffer = mempool_alloc(rcv_mempool);
 		if (recv(fd, buffer, RCV_BUFFER_SIZE, 0) < 0)
 			PERROR("Receive error!");

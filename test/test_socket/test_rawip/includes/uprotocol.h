@@ -21,68 +21,70 @@
 
 #include "list.h"
 
+#include "usock.h"
+
 /* Max number of protocol. */
 #define MAX_PROTO_NUM 10
 
 struct uprotocol {
-	void 		(*close)(struct sock *sk, 
+	void 		(*close)(struct usock *sk, 
 				 long timeout);
 
-	int		(*connect)(struct sock *sk, 
-				   struct sockaddr *uaddr, 
+	int		(*connect)(struct usock *sk, 
+				   struct sockaddr_in *uaddr, 
 				   int addr_len);
 
-	int		(*disconnect)(struct sock *sk, 
+	int		(*disconnect)(struct usock *sk, 
 				      int flags);
 
-	struct sock *	(*accept) (struct sock *sk, 
+	struct usock *	(*accept) (struct usock *sk, 
 				   int flags, 
 				   int *err);
 
-	int		(*ioctl)(struct sock *sk, 
+	int		(*ioctl)(struct usock *sk, 
 				 int cmd, 
 				 unsigned long arg);
 
-	int		(*init)(struct sock *sk);
+	int		(*init)(struct usock *sk);
 
-	void		(*destroy)(struct sock *sk);
+	void		(*destroy)(struct usock *sk);
 
-	void		(*shutdown)(struct sock *sk, 
+	void		(*shutdown)(struct usock *sk, 
 				    int how);
 
-	int		(*setsockopt)(struct sock *sk, 
+	int		(*setsockopt)(struct usock *sk, 
 				      int level, 
 				      int optname, 
-				      char __user *optval,
+				      char *optval,
 				      int optlen);
 
-	int		(*getsockopt)(struct sock *sk, 
+	int		(*getsockopt)(struct usock *sk, 
 				      int level, 
 				      int optname, 
-				      char __user *optval, 
-				      int __user *option);     
-
+				      char *optval, 
+				      int *option);     
+#if 0
 	int		(*sendmsg)(struct kiocb *iocb, 
-				   struct sock *sk, 
+				   struct usock *sk, 
 				   struct msghdr *msg, 
 				   size_t len);
 
 	int		(*recvmsg)(struct kiocb *iocb, 
-				   struct sock *sk, 
+				   struct usock *sk, 
 				   struct msghdr *msg,
 				   size_t len, 
 				   int noblock, 
 				   int flags,
 				   int *addr_len);
 
-	int		(*sendpage)(struct sock *sk, 
+	int		(*sendpage)(struct usock *sk, 
 				    struct page *page,
 				    int offset, 
 				    size_t size, 
 				    int flags);
-
-	int		(*bind)(struct sock *sk,
-				struct sockaddr *uaddr, 
+#endif
+	int		(*bind)(struct usock *sk,
+				struct sockaddr_in *uaddr, 
 				int addr_len);
 
 	char		name[32];

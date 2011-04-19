@@ -42,7 +42,7 @@ uip_header_len(struct usk_buff *uskb)
 	if (!iph)
 		return 0;
 
-	return (iph->hdr * 4);
+	return (iph->ihl * 4);
 }
 
 struct uprotocol *
@@ -62,6 +62,8 @@ uip_find_proto(struct usk_buff *uskb)
 int
 uip_output(struct usk_buff *uskb)
 {
+	// TODO: implement this.
+	return 0;
 }
 
 int
@@ -74,7 +76,6 @@ uip_input(struct usk_buff *uskb)
 	iph = uskb_iphdr(uskb);
 	proto = uprotocol_find(iph->protocol);
 	if (!proto) {
-		printf("protocol not found for %d\n", iph->protocol);
 		return -1;
 	}
 

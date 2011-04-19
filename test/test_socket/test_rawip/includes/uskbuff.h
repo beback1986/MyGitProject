@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <pthread.h>
+#include <netinet/in.h> /* for struct sockaddr_in */
 
 #include "types.h"
 #include "btqueue.h"
@@ -30,7 +31,7 @@ struct usk_buff_head {
 	struct usk_buff  *prev;
 	struct usk_buff  *next;
 	u16		 qlen;
-	pthread_mutext_t loc;
+	pthread_mutex_t loc;
 };
 
 struct usk_buff {
@@ -72,18 +73,18 @@ struct usk_buff {
 
 /* uskb queue related operations. */
 static inline void
-uskb_queue_init(struct uskb_buff_head *list)
+uskb_queue_init(struct usk_buff_head *list)
 {
-	list->prev = list->next = list;
+	list->prev = list->next = (struct usk_buff *)list;
 	pthread_mutex_init(&list->loc, NULL);
 	list->qlen = 0;
 }
 
 static inline void
-__uskb_insert(struct uskb_buff_head *list,
-	      struct uskb_buff      *new,
-	      struct uskb_buff      *prev,
-	      struct uskb_buff      *next)
+__uskb_insert(struct usk_buff_head *list,
+	      struct usk_buff      *new,
+	      struct usk_buff      *prev,
+	      struct usk_buff      *next)
 {
 	new->prev = prev;
 	new->next = next;
@@ -92,10 +93,10 @@ __uskb_insert(struct uskb_buff_head *list,
 }
 
 static inline struct usk_buff *
-__uskb_delete(struct uskb_buff_head *list,
-	      struct uskb_buff      *old)
+__uskb_delete(struct usk_buff_head *list,
+	      struct usk_buff      *old)
 {
-	if (old == ((struct uskb_buff *)list))
+	if (old == (struct usk_buff *)list)
 		return NULL;
 	old->prev->next = old->next;
 	old->next->prev = old->prev;
@@ -108,7 +109,7 @@ __uskb_delete(struct uskb_buff_head *list,
 static inline void
 __uskb_enqueue_tail(struct usk_buff_head *list, struct usk_buff *new)
 {
-	__uskb_insert(list, new, list, list->prev);
+	__uskb_insert(list, new, (struct usk_buff *)list, list->prev);
 }
 
 static inline struct usk_buff *
@@ -140,7 +141,7 @@ uskb_dequeue_head(struct usk_buff_head *list)
 
 #define uskb_direct(uskb) ((uskb)->direct)
 
-#define uskb_set_direct(uskb, direct) ((uskb)->direct = direct)
+#define uskb_set_direct(uskb, __D) ((uskb)->direct = (__D))
 
 
 /* Inline functions to set properties of usk_buff */
@@ -178,14 +179,14 @@ uskb_header_grow(struct usk_buff *uskb, const int len)
 	((uskb)->header_len + (uskb)->payload_len)
 
 static inline void
-uskb_set_header(struct usk_buff *uskb, const void *header_buff, const int max_len)
+uskb_set_header(struct usk_buff *uskb, void *header_buff, const int max_len)
 {
 	uskb->header = header_buff;
-	uskb->header_max = len
+	uskb->header_max = max_len;
 }
 
 static inline void
-uskb_set_payload(struct usk_buff *uskb, const void *payload)
+uskb_set_payload(struct usk_buff *uskb, void *payload)
 {
 	uskb->payload = payload;
 }
@@ -226,7 +227,7 @@ extern struct usk_buff *
 uskb_alloc_in();
 
 extern struct usk_buff *
-uskb_alloc_out(int header_size)
+uskb_alloc_out(int header_size);
 
 extern void
 uskb_free(struct usk_buff *uskb);

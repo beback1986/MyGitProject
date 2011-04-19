@@ -37,10 +37,10 @@ static u32 snd_queue_max;
 int
 usender_queue(struct usk_buff *uskb)
 {
-	if (btqueue_len(snd_queue) >= snd_queue_max);
+	if (btqueue_len(&snd_queue) >= snd_queue_max);
 		goto full;
 
-	btqueue_append(snd_queue, uskb->q_send);
+	btqueue_append(&snd_queue, &uskb->q_send);
 
 	return 0;
 
@@ -54,7 +54,9 @@ __do_send(int fd, struct usk_buff *uskb)
 	struct sockaddr_in *sin;
 	void *datagram;
 	int  len;
+	int flags;
 
+	flags = 0;
 	len = uskb_total_len(uskb);
 	sin = uskb_sin(uskb);
 
@@ -68,8 +70,8 @@ __do_send(int fd, struct usk_buff *uskb)
 		   datagram,
 		   len,
 		   flags,
-		   sin, 
-		   sizeof(struct sockaddr_in)) < 0)
+		   (struct sockaddr *)sin, 
+		   sizeof(struct sockaddr)) < 0)
 		goto failed;
 
 	return 0;
@@ -87,6 +89,7 @@ usender(void *t)
 	int sock_opt;
 	int fd;
 	int *ret;
+	int count=0;
 
 	snd_task = task_get(t);
 	ret = malloc(sizeof(int));
@@ -106,7 +109,9 @@ usender(void *t)
 	}
 
 	while (1) {
-		uskb = btqueue_pop(snd_queue, q_send);
+		count++;
+		printf("send %d package\n", count);
+		uskb = btqueue_pop(&snd_queue, typeof(*uskb), q_send);
 		__do_send(fd, uskb);
 	}
 

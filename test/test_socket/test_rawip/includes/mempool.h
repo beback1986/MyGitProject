@@ -25,7 +25,7 @@
 
 struct mem_status {
 	int status;
-}
+};
 
 #define MEM_PTR_TO_STATUS(ptr)						\
 	((struct mem_status *)((ptr)-sizeof(struct mem_status)))
@@ -58,19 +58,21 @@ enum {
 extern struct mempool *
 mempool_create(const char *name, int size, int count);
 
-extern void 
-mempool_destroy(struct mempool *pool);
-
 extern void *
 mempool_alloc(struct mempool *pool);
 
 extern void
 mempool_free(void *ptr);
 
+/* TODO: Implement functions below
+extern void 
+mempool_destroy(struct mempool *pool);
+
 extern struct void
 mempool_expand(struct mempool *pool, int count);
 
 extern struct void
 mempool_shrink(struct mempool *pool, int count);
+*/
 
 #endif /* __MEMPOOL_H */

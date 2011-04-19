@@ -25,7 +25,7 @@
 
 #include <pthread.h>
 
-typedef {
+typedef struct {
 	int 		data;
 	pthread_mutex_t data_loc;
 	pthread_cond_t 	data_cond;
@@ -34,8 +34,8 @@ typedef {
 static inline void
 atomic_init(atomic_t *atom)
 {
-	pthread_mutex_init(atom->data_loc, NULL);
-	pthread_cond_init(atom->data_cond, NULL);
+	pthread_mutex_init(&atom->data_loc, NULL);
+	pthread_cond_init(&atom->data_cond, NULL);
 }
 
 #define atomic_val(atom)	\

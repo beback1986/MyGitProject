@@ -17,10 +17,12 @@
  */
 
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "task.h"
-#include "transport.h"
+
+#include "utransport.h"
 
 #if 0	//backup some useful thing.
 #define P 30001 /* lets flood the sendmail port */

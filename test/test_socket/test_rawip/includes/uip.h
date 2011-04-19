@@ -43,7 +43,7 @@ extern int
 uip_header_len(struct usk_buff *uskb);
 
 extern struct uprotocol *
-uip_find_proto(struct usk_buff *uskb)
+uip_find_proto(struct usk_buff *uskb);
 
 extern int
 uip_output(struct usk_buff *uskb);

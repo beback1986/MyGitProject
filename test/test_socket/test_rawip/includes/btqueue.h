@@ -25,6 +25,7 @@
 #include <pthread.h>
 
 #include "atomic.h"
+#include "list.h"
 
 #define btqueue_entry(ptr, type, member) \
 	container_of(ptr, type, member)
@@ -48,7 +49,7 @@ struct btqueue {
 #define BTQUEUE_INIT(btq)						\
 	do {								\
 		atomic_init(&(btq)->len);				\
-		pthread_mutex_init(&(btq)->loc);			\
+		pthread_mutex_init(&(btq)->loc, NULL);			\
 	} while(0)
 
 /* TODO: Implemet lock free enqueue! */
@@ -63,13 +64,13 @@ struct btqueue {
 		atomic_inc(&(btq)->len);				\
 	} while(0)
 
-#define btqueue_pop(btq, member)	({			\
+#define btqueue_pop(btq, type, member)	({			\
 	atomic_dec(&(btq)->len);				\
 								\
-	btqueue_node *__btn__ = (btq)->head;			\
+	struct btqueue_node *__btn__ = (btq)->head;		\
 	(btq)->head = (btq)->head->next;			\
 	__btn__->next = NULL;					\
-	btqueue_entry(__btn__, typeof(*ptr), member);})
+	btqueue_entry(__btn__, type, member);})
 
 #define btqueue_len(btq)	\
 	(atomic_val(&(btq)->len))

@@ -37,10 +37,11 @@ utcp_handler(struct usk_buff *uskb)
 {
 	struct tcphdr *tcph;
 	tcph = uskb_tcphdr(uskb);
+	tcphdr_dump(tcph);
 	return 0;
 }
 
-static struct uprotocol utcp {
+static struct uprotocol utcp = {
 	.proto_num	= 6,
 	.name		= "TCP",
 	.header_len	= utcp_header_len,

@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <pthread.h>
+#include <signal.h>
 
 #include "task.h"
 

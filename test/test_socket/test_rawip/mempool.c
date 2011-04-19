@@ -17,6 +17,7 @@
  */
 
 
+#include <string.h>
 #include <stdlib.h>
 
 #include "types.h"
@@ -40,12 +41,21 @@ mempool_create(const char *name, int size, int count)
 	pool->size = size;
 	pool->count = count;
 	pool->cursor = 0;
+	pool->mempod = calloc(count, sizeof(void *));
+	if(!pool->mempod)
+		goto failed;
 	for (i=0; i<count; i++) {
 		pool->mempod[i] = calloc(1, size + sizeof(struct mem_status));
+		if (!pool->mempod[i])
+			goto failed;
 		pool->mempod[i]+=sizeof(struct mem_status);
+		MEM_SET_STATUS(pool->mempod[i], MEM_IDLE);
 	}
 
 	return pool;
+
+failed:
+	return NULL;
 }
 
 void *
@@ -57,9 +67,11 @@ mempool_alloc(struct mempool *pool)
 		if (MEM_STATUS(pool->mempod[pool->cursor]) == MEM_IDLE) {
 			i = pool->cursor;
 			pool->cursor++;
+			pool->cursor %= pool->count;
 			break;
 		}
 		pool->cursor++;
+		pool->cursor %= pool->count;
 	}
 
 	MEM_SET_STATUS(pool->mempod[i], MEM_USED);

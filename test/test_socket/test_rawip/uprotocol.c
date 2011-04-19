@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "protocol.h"
+#include "uprotocol.h"
 #include "list.h"
 
 static struct uprotocol *proto_list[MAX_PROTO_NUM];

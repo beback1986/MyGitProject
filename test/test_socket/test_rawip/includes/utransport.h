@@ -19,6 +19,8 @@
 #ifndef __UTRANSPORT_H
 #define __UTRANSPORT_H
 
+#include "uskbuff.h"
+
 /* Interfaces for sender. */
 extern struct task *
 usender_start(void);
@@ -27,11 +29,11 @@ extern void
 usender_init(void);
 
 extern int
-usender_queue(struct usk_buff *uskb)
+usender_queue(struct usk_buff *uskb);
 
 /* Interfaces for receiver. */
 #define RCV_BUFFER_SIZE 8192 /* Single packets are usually less than 8192 bytes. */
-#define RCV_BUFFER_COUNT 1024
+#define RCV_BUFFER_COUNT 12
 
 extern struct task *
 ureceiver_start(void);
