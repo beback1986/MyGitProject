@@ -1,2 +1,2 @@
 default:
-	gcc test.c
+	gcc -g -O0 test.c
