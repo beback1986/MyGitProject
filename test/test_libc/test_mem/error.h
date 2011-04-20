@@ -16,8 +16,8 @@
  * =====================================================================================
  */
 
-#ifndef __UERROR_H
-#define __UERROR_H
+#ifndef __ERROR_H
+#define __ERROR_H
 
 #include <errno.h>
 #include <string.h>
@@ -26,7 +26,7 @@
 #define PERROR(message)                                         \
         do {                                                    \
             printf(message);                                    \
-            printf(" errno:%d(%s)\n", errno, strerror(errno));  \
+            printf(" (%d:%s)\n", errno, strerror(errno));  \
         } while(0)
 
-#endif /* __UERROR_H */
+#endif /* __ERROR_H */
