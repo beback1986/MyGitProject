@@ -19,6 +19,11 @@
  */
 #include <sys/mman.h>
 
+/* For:
+ * getrlimit()
+ */
+#include <sys/resource.h>
+
 #include "error.h"
 
 void *valoc_mem;
@@ -64,8 +69,9 @@ void
 test_brk(void)
 {
 	void *prog_break;
-	int brk_len;
+	unsigned int brk_len;
 	int ret;
+	int i;
 
 	prog_break = sbrk(0);
 	printf("Programe break address:\t\t%p\n", prog_break);
@@ -75,11 +81,15 @@ test_brk(void)
 	else
 		printf("prot-break before valloc:%x\n", valoc_mem-prog_break);
 
-	brk_len = 0x3000;
-	ret = brk(prog_break+brk_len);
-	if(ret) {
-		PERROR("Can not use brk to set programe break.");
-		goto failed;
+	brk_len = 0x20000000;
+	for (i=0; i<6; i++) {
+		ret = brk(prog_break+brk_len);
+		if(ret) {
+			PERROR("Can not use brk to set programe break.");
+			goto failed;
+		}
+		printf("brked %dM memory.\n", brk_len/1024/1024);
+		brk_len += 0x20000000;
 	}
 
 	prog_break = sbrk(0);
@@ -94,15 +104,37 @@ test_malloc(void)
 {
 	void *ptr;
 	int i;
+	size_t aloc_unit_size = 0x100000;
+	size_t aloc_size = 0;
 
-	for (i=0; i<34; i++) {
-		ptr = malloc(4096);
-//		printf("malloc ptr addr:%p\n", ptr);
-		if (ptr > valoc_mem)
+	for (i=0; i<12; i++) {
+		ptr = malloc(aloc_unit_size);
+		if (ptr == NULL) {
+			printf("Allocated %dM memory.", aloc_size/1024/1024);
+			PERROR("Can not malloc memory.");
+			goto failed;
+		}
+		memcpy(ptr, "hellohello", 10);
+		aloc_size += aloc_unit_size;
+/*		if (ptr > valoc_mem)
 			printf("malloc after valloc:%x\n", ptr-valoc_mem);
 		else
-			printf("malloc before valloc:%x\n", valoc_mem-ptr);
+			printf("malloc before valloc:%x\n", valoc_mem-ptr);*/
 	}
+
+failed:
+	return;
+}
+
+void
+test_rlimit(void)
+{
+	struct rlimit lmt;
+	if (getrlimit(RLIMIT_DATA, &lmt)) {
+		PERROR("Get data segment size error.");
+		goto failed;
+	}
+	printf("Data segment size limit cur:%d, max:%d\n", lmt.rlim_cur, lmt.rlim_max);
 
 failed:
 	return;
@@ -111,11 +143,17 @@ failed:
 int
 main(int argc, char *args[])
 {
-	test_mremap();
+	char s[10];
 
-	test_brk();
+//	test_mremap();
+
+//	test_brk();
 
 	test_malloc();
+
+	test_rlimit();
+
+//	scanf("%s", s);
 
 	return 0;
 }
