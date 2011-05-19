@@ -147,7 +147,7 @@ main(int argc, char *args[])
 
 //	test_mremap();
 
-//	test_brk();
+	test_brk();
 
 	test_malloc();
 
