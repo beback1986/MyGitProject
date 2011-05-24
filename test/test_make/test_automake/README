@@ -1,0 +1,2 @@
+You can either run ./autogen.sh or ./bootstrap to generate configure
+scripts.
