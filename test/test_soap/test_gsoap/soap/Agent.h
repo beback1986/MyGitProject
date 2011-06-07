@@ -5,12 +5,14 @@
 //gsoap ns service encoding: encoded 
 //gsoap ns schema namespace: urn:Agent
 
+typedef char * xsd__string;
+
 struct ns__Hello_Request {
-	char *word;
+	xsd__string word;
 };
 
 struct ns__Hello_Response {
-	char *word;
+	xsd__string word;
 };
 
 int ns__Hello(struct ns__Hello_Request *req,
