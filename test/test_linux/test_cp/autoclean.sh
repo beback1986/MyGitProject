@@ -7,4 +7,8 @@ rm	-rf			\
 	depcomp			\
 	install-sh		\
 	missing			\
-	src/Makefile.in
+	src/Makefile.in		\
+	config.guess		\
+	config.sub		\
+	ltmain.sh
+

@@ -3,7 +3,7 @@
 
 #include "error_handle.h"
 
-#define DIR_TO_OPEN "/mnt/glusterfs-mnt"
+#define DIR_TO_OPEN "test dir"
 
 int main (int argc, char *argv[])
 {
