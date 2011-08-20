@@ -7,5 +7,5 @@ SUBDIRS = src
 
 CLEANFILES = 
 
-dist: distdir
-	echo "hello"
+#dist: distdir
+#	echo "hello"

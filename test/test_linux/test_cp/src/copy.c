@@ -18,15 +18,19 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <linux/limits.h>
+#include <limits.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <libgen.h>
 #include <dirent.h>
 #include <string.h>
+#include <errno.h>
 
 #include "fstack.h"
 #include "log.h"
 #include "copy.h"
+
+static int follow_sym = 0;
 
 int listdir(char *dir_path, struct dstack *ds)
 {
@@ -51,84 +55,171 @@ failed:
 	return 1;
 }
 
-int do_dir_create()
+/* Wraper the 2 stat function. If we see a link file in anywhere, the
+ * follow symbolic option MUST be turned off! So there is no need to 
+ * take any action to follow the symbolic.
+ */
+int mstat(const char *path, struct stat *buf)
+{
+	if (follow_sym)
+		return stat(path, buf);
+	return lstat(path, buf);
+}
+
+int do_dir_create(struct copy_opts *opts, char *src, char *dst)
+{
+	struct stat st_buff;
+
+	vprint("create dir:%s\n", dst);
+
+	if (mstat(src, &st_buff)) {
+		eprint("File:%s wrong stat, %s\n",
+							dst, strerror(errno));
+		goto failed;
+	}
+
+	if (S_ISLNK(st_buff.st_mode) && !opts->opt_follow_sym) {
+		/* TODO:create symblic here */
+		goto out;
+	}
+
+	if (mkdir(dst, st_buff.st_mode)) {
+		eprint("Can not create dir:%s, reason:%s\n", 
+							dst, strerror(errno));
+		goto failed;
+	}
+
+out:
+	return 0;
+failed:
+	return 1;
+}
+
+int do_dir_revise(struct copy_opts *opts, char *src, char *dst)
+{
+	vprint("revice dir:%s\n", dst);
+	return 0;
+}
+
+int do_file_copy(struct copy_opts *opts, char *src, char *dst)
+{
+	struct stat st_buff;
+
+	vprint("copy :%s => %s\n", src, dst);
+
+	if (mstat(src, &st_buff)) {
+		eprint("File:%s wrong stat, %s\n",
+							dst, strerror(errno));
+		goto failed;
+	}
+
+	return 0;
+failed:
+	return 1;
+}
+
+int do_link_create(struct copy_opts *opts, char *src, char *dst)
 {
 	return 0;
 }
 
-int do_dir_revise()
-{
-	return 0;
-}
-
-int do_file_copy()
-{
-	return 0;
-}
-
-int copy(struct copy_opts *opts, char *src_path, char *dst_path, int is_dst_dir)
+int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
 {
 	struct dstack *ds;
-	struct stat src_st;
-	struct stat dst_st;
 	struct stat st_buff;
-	char *src_base_path;
-	char *dst_base_path;
-	char *filename;
-	char *pa_buff;
-	char *pbuff = NULL;
+	char *src_name = NULL;
+	char *dst_name = NULL;
+	char *src_buff = NULL;
+	char *dst_buff = NULL;
+	char *psrc_buff = NULL;
+	char *pdst_buff = NULL;
 	int ret;
 	int src_base_len;
+	int dst_base_len;
 
-	ret = stat(dst_path, &dst_st);
-	if (ret < 0) {
-		if (is_dst_dir) {
-			eprint("cp: target dir %s not exist!\n", dst_path);
+	/* See mstat() for more information. */
+	follow_sym = opts->opt_follow_sym;
+
+	src_buff = (char *)calloc(1, PATH_MAX);
+	dst_buff = (char *)calloc(1, PATH_MAX);
+	strcpy(src_buff, dirname(strdup(src_path)));
+	src_base_len  = strlen(src_buff);
+	psrc_buff = src_buff + src_base_len;
+	src_name = basename(strdup(src_path));
+
+	if (IS_MULTI_SRC(flags)) {
+		if (IS_DST_EXIST(flags)) {
+			eprint("dst not exist!\n");
+			return 1;
+		} else if (!IS_DST_DIR(flags)) {
+			eprint("dst is not dir!\n");
 			return 1;
 		}
+	} else {
+		if (IS_DST_EXIST(flags) ) {
+			if (!IS_DST_DIR(flags)) {
+				/* Dst exist, and is a file, do the copy directly. */
+				return do_file_copy(opts, src_path, dst_path);
+			}
+		} else {
+			if (IS_SRC_EXIST(flags)) {
+				if (IS_SRC_DIR(flags)) {
+					do_dir_create(opts, src_path, dst_path);
+				} else {
+					return do_file_copy(opts, src_path, dst_path);
+				}
+			} else {
+				eprint("src not exist!\n");
+				return 1;
+			}
+		}
 	}
-	else {
-		if (S_ISDIR(dst_st.st_mode))
-			dst_base_path = strdup(dst_path);
-		else
-			dst_base_path = strdup(dst_path);
-	}
+	strcpy(dst_buff, dst_path);
+	dst_base_len = strlen(dst_buff);
+	pdst_buff = dst_buff + dst_base_len;
 
 	ds = dstack_new();
 	dstack_push_dir(ds);
-
-	pa_buff = (char *)calloc(1, PATH_MAX);
-	src_base_path = dirname(src_path);
-	filename      = basename(src_path);
-	strcpy(pa_buff, src_base_path);
-	src_base_len  = strlen(src_base_path);
-	pbuff = pa_buff + src_base_len;
-
-	dstack_cflist_add(ds, filename);
+	dstack_cflist_add(ds, src_name);
 
 	while (!dstack_isempty(ds)) {
-		if (!dstack_cflist_next(ds, pbuff)) {
+		if (dstack_cflist_next(ds, psrc_buff)) {
 			dstack_pop_dir(ds);
-			do_dir_revise();
-			continue;
+			if (!dstack_cflist_next(ds, psrc_buff)) {
+				/* Incase that we have arrive at the bottom of the stack. */
+				strcpy(pdst_buff, psrc_buff);
+				do_dir_revise(opts, src_buff, dst_buff);
+			}
+			goto clean;
 		}
-		ret = stat(pa_buff, &st_buff);
-		vprint("stat file:%s\n", pa_buff);
+		strcpy(pdst_buff, psrc_buff);
+		ret = mstat(src_buff, &st_buff);
+
 		if (ret) {
-			vprint("");
-		}
-		else if (S_ISDIR(st_buff.st_mode)) {
-			listdir(pa_buff, ds);  //Sort all files by name
-			do_dir_create();
-		}
-		else if (S_ISREG(st_buff.st_mode) || S_ISLNK(st_buff.st_mode)) {
-			do_file_copy();
-		}
-		else {
+			eprint("file:%s not exist!\n", src_buff);
+		} else if (S_ISDIR(st_buff.st_mode)) {
+			dstack_cflist_prev(ds);
+			dstack_push_dir(ds);
+			listdir(src_buff, ds);
+			if (do_dir_create(opts, src_buff, dst_buff))
+				goto failed;
+		} else if (S_ISREG(st_buff.st_mode)) {
+			if (do_file_copy(opts, src_buff, dst_buff))
+				goto failed;
+		} else if (S_ISLNK(st_buff.st_mode)) {
+			if (do_link_create(opts, src_buff, dst_buff))
+				goto failed;
+		} else {
 			/* If we don't know the file type, do nothing. */
-			vprint("Unknown file type!:%s\n", pa_buff);
+			vprint("Unknown file type!:%s\n", src_buff);
 		}
-		memset(pbuff, '\0', PATH_MAX-src_base_len);
+
+clean:
+		memset(psrc_buff, '\0', PATH_MAX-src_base_len);
+		memset(pdst_buff, '\0', PATH_MAX-dst_base_len);
 	}
 	return 0;
+
+failed:
+	return 1;
 }

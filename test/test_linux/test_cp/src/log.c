@@ -35,7 +35,7 @@ int vprint(const char *format, ...)
 
 	if (verbose) {
 		va_start(arg, format); 
-		done = printf(format, arg); 
+		done = vprintf(format, arg); 
 		va_end(arg); 
 	}
 
@@ -47,7 +47,7 @@ int eprint(const char *format, ...)
 	int done = 0; 
 
 	va_start(arg, format); 
-	done = fprintf(stderr, format, arg); 
+	done = vfprintf(stderr, format, arg); 
 	va_end(arg); 
 
 	return done; 	

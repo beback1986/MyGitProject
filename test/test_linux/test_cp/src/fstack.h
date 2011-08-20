@@ -20,6 +20,7 @@
 #define __FSTACK_H__
 
 struct flist_node {
+	struct flist_node *prev;
 	struct flist_node *next;
 	char * filename;
 };
@@ -34,6 +35,7 @@ struct flist {
 struct flist *flist_new(); //impl
 void flist_free(struct flist *fl);//impl
 int flist_add(struct flist *fl, const char *filename);//impl
+int flist_prev(struct flist *fl);
 /* Return current node in the list, and move cur_pos forward */
 char * flist_next(struct flist *fl);	//impl
 
@@ -52,7 +54,8 @@ struct dstack * dstack_new();	//impl
 int dstack_isempty(struct dstack *ds);
 int dstack_push_dir(struct dstack *ds);	//impl
 int dstack_pop_dir(struct dstack *ds);
-char * dstack_cflist_next(struct dstack *ds, char *pbuff); //impl
+int * dstack_cflist_next(struct dstack *ds, char *pbuff); //impl
+int dstack_cflist_prev(struct dstack *ds);
 int dstack_cflist_add(struct dstack *ds, const char *filename); //impl
 
 #endif /* __FSTACK_H__ */
