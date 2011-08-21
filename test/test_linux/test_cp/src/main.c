@@ -35,13 +35,22 @@ void usage()
 	printf("      --own-attr      copy uid & gid attribute\n");
 	printf("  -f, --force         force to copy, replace duplicate files\n");
 	printf("  -r, --recursive     copy directories recursively\n");
-	printf("  -s                  follow symbolic instead of make link\n");
+	printf("  -s, --follow-symbol follow symbolic instead of make link\n");
 	printf("  -v, --verbose       print all actions which is taking place\n");
 	printf("\n");
 	printf("  -h, --help    print this help text\n");
 	printf("\n");
 
 	exit(0);
+}
+
+static int follow_sym = 0;
+
+int __mstat(const char *path, struct stat *buf)
+{
+	if (follow_sym)
+		return stat(path, buf);
+	return lstat(path, buf);
 }
 
 struct src_list {
@@ -67,6 +76,8 @@ int get_opts(int argc, char *argv[], struct copy_opts *opts, struct src_list *sr
 				opts->opt_force = 1;
 			else if (strcmp(argv[i], "--recursive") == 0)
 				opts->opt_cp_dir = 1;
+			else if (strcmp(argv[i], "--follow-symbol") == 0)
+				follow_sym = opts->opt_follow_sym = 1;
 			else if (strcmp(argv[i], "--verbose") == 0)
 				set_verbose(1);
 			else if (strcmp(argv[i], "--help") == 0)
@@ -81,7 +92,7 @@ int get_opts(int argc, char *argv[], struct copy_opts *opts, struct src_list *sr
 				if (argv[i][j] == 'r')
 					opts->opt_cp_dir = 1;
 				else if (argv[i][j] == 's')
-					opts->opt_follow_sym = 1;
+					follow_sym = opts->opt_follow_sym = 1;
 				else if (argv[i][j] == 'f')
 					opts->opt_force = 1;
 				else if (argv[i][j] == 'v')
@@ -114,10 +125,15 @@ int get_env(const struct src_list *src_list, const char *dst)
 	if (src_list->len > 1) {
 		SET_MULTI_SRC(flags);
 	} else {
-		if (!stat(src_list->list[0], &st_buff)) {
+		if (!__mstat(src_list->list[0], &st_buff)) {
 			SET_SRC_EXIST(flags);
-			if (S_ISDIR(st_buff.st_mode))
+			if (S_ISDIR(st_buff.st_mode)) {
 				SET_SRC_DIR(flags);
+			} else if (S_ISLNK(st_buff.st_mode)) {
+				SET_SRC_LNK(flags);
+			} else if (S_ISREG(st_buff.st_mode)) {
+				SET_SRC_REG(flags);
+			}
 		}
 	}
 

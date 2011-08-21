@@ -2,7 +2,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([copy], [1.0], [qq327662250@gmail.com])
+AC_INIT([copy], [1.1], [qq327662250@gmail.com])
 AC_CONFIG_HEADERS([config-h.in:config.h])
 
 AM_INIT_AUTOMAKE([1.9 foreign])

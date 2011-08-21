@@ -266,13 +266,13 @@ int __do_data_copy(char *src, char *dst)
 		eprint("Can not open file:%s(%s)\n", dst, strerror(errno));
 		goto fail2;
 	}
-	if (!(buf=(char *)calloc(1, BUFFER_SIZE))) {
+	if (!(buf=(char *)calloc(1, BLOCK_SIZE))) {
 		eprint("Can not alloc memory!\n");
 		goto fail3;
 	}
 
 	while (1) {
-		nread = read(fd_src, buf, BUFFER_SIZE);
+		nread = read(fd_src, buf, BLOCK_SIZE);
 		if (nread == 0) {
 			ret = 0;
 			break;
@@ -406,15 +406,25 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
 	int src_base_len;
 	int dst_base_len;
 
-	/* See mstat() for more information. */
+	/* See mstat(),mlistxattr()... for more information. */
 	follow_sym = opts->opt_follow_sym;
 
+	/* Alloc source and destnation path name buffer. */
 	src_buff = (char *)calloc(1, PATH_MAX);
 	dst_buff = (char *)calloc(1, PATH_MAX);
+
+	/*
+	 * Initail source path related variables. 
+	 * Include src_buff, psrc_buff, src_base_len, src_name.
+	 */
 	strcpy(src_buff, dirname(strdup(src_path)));
 	src_base_len  = strlen(src_buff);
 	psrc_buff = src_buff + src_base_len;
 	src_name = basename(strdup(src_path));
+
+	/* Prepare dstack first. */
+	ds = dstack_new();
+	dstack_push_dir(ds);
 
 	if (IS_MULTI_SRC(flags)) {
 		if (IS_DST_EXIST(flags)) {
@@ -441,19 +451,36 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
 			}
 		} else {
 			if (IS_SRC_DIR(flags)) {
+				if (!opts->opt_cp_dir) {
+					eprint("%s is a directory, try option -r.\n", src_path);
+					goto failed;
+				}
+
+				strcpy(src_buff, src_path);
+				src_base_len  = strlen(src_buff);
+				psrc_buff = src_buff + src_base_len;
+
+				listdir(src_buff, ds);
+
 				do_dir_create(opts, src_path, dst_path);
-			} else {
+				goto begin;
+			} else if (IS_SRC_LNK(flags)) {
+				return do_link_create(opts, src_path, dst_path);
+			} else if (IS_SRC_REG(flags)){
 				return do_file_copy(opts, src_path, dst_path);
+			} else {
+				eprint("Unknown file type:%s\n", src_buff);
+				goto failed;
 			}
 		}
 	}
+
+	dstack_cflist_add(ds, src_name);
+
+begin:
 	strcpy(dst_buff, dst_path);
 	dst_base_len = strlen(dst_buff);
 	pdst_buff = dst_buff + dst_base_len;
-
-	ds = dstack_new();
-	dstack_push_dir(ds);
-	dstack_cflist_add(ds, src_name);
 
 	while (!dstack_isempty(ds)) {
 		if (dstack_cflist_next(ds, psrc_buff)) {
@@ -489,7 +516,7 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
 				goto failed;
 		} else {
 			/* If we don't know the file type, do nothing. */
-			eprint("Unknown file type:%s\n", src_buff);
+			eprint("Unknown file type:%s, ignoring!\n", src_buff);
 		}
 
 clean:

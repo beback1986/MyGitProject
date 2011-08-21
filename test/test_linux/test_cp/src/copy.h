@@ -24,21 +24,27 @@
 #define DST_DIR   0x0004
 #define SRC_EXIST 0x0008  /* Works only when MULTI_SRC is not set. */
 #define SRC_DIR   0x0010  /* Works only when MULTI_SRC is not set. */
+#define SRC_LNK   0x0020  /* Works only when MULTI_SRC is not set. */
+#define SRC_REG   0x0040  /* Works only when MULTI_SRC is not set. */
 
 #define IS_MULTI_SRC(flags) (flags & MULTI_SRC)
 #define IS_DST_EXIST(flags) (flags & DST_EXIST)
 #define IS_DST_DIR(flags)   (flags & DST_DIR)
 #define IS_SRC_EXIST(flags) (flags & SRC_EXIST)
 #define IS_SRC_DIR(flags)   (flags & SRC_DIR)
+#define IS_SRC_LNK(flags)   (flags & SRC_LNK)
+#define IS_SRC_REG(flags)	(flags & SRC_REG)
 
 #define SET_MULTI_SRC(flags) {flags |= MULTI_SRC;}
 #define SET_DST_EXIST(flags) {flags |= DST_EXIST;}
 #define SET_DST_DIR(flags)   {flags |= DST_DIR;}
 #define SET_SRC_EXIST(flags) {flags |= SRC_EXIST;}
 #define SET_SRC_DIR(flags)   {flags |= SRC_DIR;}
+#define SET_SRC_LNK(flags)   {flags |= SRC_LNK;}
+#define SET_SRC_REG(flags)   {flags |= SRC_REG;}
 
 
-#define BUFFER_SIZE 32708
+#define BLOCK_SIZE 32708
 
 /* Options for copy. */
 struct copy_opts {
