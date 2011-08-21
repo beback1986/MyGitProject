@@ -219,7 +219,7 @@ failed:
 	return 1;
 }
 
-int *dstack_cflist_next(struct dstack *ds, char *pbuff)
+int dstack_cflist_next(struct dstack *ds, char *pbuff)
 {
 	char *filename;
 	struct dstack_node *dn;
@@ -233,8 +233,6 @@ int *dstack_cflist_next(struct dstack *ds, char *pbuff)
 	dn = ds->tail;
 	while (dn) {
 		filename = flist_current(dn->fl);
-//		if (!filename)
-//			goto failed;
 		pbuff = strcat(pbuff, "/");
 		pbuff = strcat(pbuff, filename);
 		dn = dn->prev;

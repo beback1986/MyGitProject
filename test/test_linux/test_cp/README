@@ -1,1 +1,10 @@
-Run ./autogen.sh to generate configure scripts.
+Follow the these steps to install this package.
+
+1. ./configure
+2. make
+3. make install
+
+Default, it will be installed into /usr/local. You can add --prefix
+option in first step, to installed into a prefered location.
+
+After install, you can tap 'mcp --help' to get a brief user manual.

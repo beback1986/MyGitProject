@@ -18,6 +18,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <attr/xattr.h>
+#include <stdio.h>
 #include <limits.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -26,6 +28,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <utime.h>
 
 #include "fstack.h"
 #include "log.h"
@@ -56,9 +59,10 @@ failed:
 	return 1;
 }
 
-/* Wraper the 2 stat function. If we see a link file in anywhere, the
- * follow symbolic option MUST be turned off! So there is no need to 
- * take any action to follow the symbolic.
+/*
+ * Wraper all the symbolic related functions. If we see a link file
+ * in anywhere, the follow symbolic option MUST be turned off! So
+ * there is no need to take any action to follow the symbolic.
  */
 int mstat(const char *path, struct stat *buf)
 {
@@ -67,17 +71,116 @@ int mstat(const char *path, struct stat *buf)
 	return lstat(path, buf);
 }
 
-/* Base attr copy function for all file types.
- */
-int __do_battr_copy(char *src, char *dst)
+int msetxattr(const char *path, const char *name, 
+              const void *value, size_t size, int flags)
 {
+	if (follow_sym)
+		return setxattr(path, name, value, size, flags);
+	return lsetxattr(path, name, value, size, flags);
+}
+
+int mlistxattr(const char *path, char *list, size_t size)
+{
+	if (follow_sym)
+		return listxattr(path, list, size);
+	return llistxattr(path, list, size);
+}
+
+int mgetxattr(const char *path, const char *name, void *value, size_t size)
+{
+	if (follow_sym)
+		return getxattr(path, name, value, size);
+	return lgetxattr(path, name, value, size);
+}
+
+int mchown(const char *path, uid_t owner, gid_t group)
+{
+	if (follow_sym)
+		return chown(path, owner, group);
+	return lchown(path, owner, group);
+}
+
+/*
+ * Base attr copy function for all file types.
+ */
+int __do_battr_copy(const char *src, const char *dst)
+{
+	struct stat st_src;
+	struct utimbuf ut;
+
+	if (stat(src, &st_src))
+		goto failed;
+
+	ut.actime = st_src.st_atime;
+	ut.modtime = st_src.st_mtime;
+
+	if (utime(dst, &ut))
+		goto failed;
+
+	return 0;
+failed:
+	eprint("Error while copy attr from:%s, to:%s.(%s)",
+					src, dst, strerror(errno));
+	return 1;
+}
+
+/*
+ * Extend attr copy function for all file types.
+ */
+int __do_xattr_copy(const char *src, const char *dst)
+{
+	char *attr_name = NULL;
+	char *attr_val = NULL;
+	char *p_name = NULL;
+	int attr_name_size;
+	int attr_val_size;
+
+	attr_name_size = mlistxattr(src, NULL, 0);
+
+	if (attr_name_size < 0) {
+		eprint("Get attr of file:%s error, ignoring.(%s)\n", src, strerror(errno));
+		goto out;
+	} else if (attr_name_size == 0) {
+		goto out;
+	}
+
+	attr_name = (char *)calloc(1, attr_name_size);
+
+	if (mlistxattr(src, attr_name, attr_name_size) < 1) {
+		eprint("Get attr of file:%s error, ignoring.(%s)\n", src, strerror(errno));
+		goto out1;
+	}
+
+	p_name = attr_name;
+	attr_val = calloc(1, PATH_MAX);
+	while (attr_name_size > 0) {
+		attr_val_size = mgetxattr(src, p_name, attr_val, PATH_MAX);
+		msetxattr(dst, p_name, attr_val, attr_val_size, 0);
+		attr_name_size -= strlen(p_name) + 1;
+		p_name += strlen(p_name) + 1;
+	}
+
+	free(attr_val);
+out1:
+	free(attr_name);
+out:
 	return 0;
 }
 
-/* Extend attr copy function for all file types.
+/*
+ * Owner attr copy function for all file types.
  */
-int __do_xattr_copy(char *src, char *dst)
+int __do_own_copy(char *src, char *dst)
 {
+	struct stat st_buff;
+
+	if (mstat(src, &st_buff))
+		goto out1;
+
+	if (mchown(dst, st_buff.st_uid, st_buff.st_gid))
+		eprint("Can not set own for:%s. Ignoring.\n", dst);
+
+out1:
 	return 0;
 }
 
@@ -85,7 +188,7 @@ int do_dir_create(struct copy_opts *opts, char *src, char *dst)
 {
 	struct stat st_buff;
 
-	vprint("create dir:%s\n", dst);
+	vprint("d:%s => %s\n", src, dst);
 
 	if (mstat(src, &st_buff)) {
 		eprint("File:%s wrong stat.(%s)\n",
@@ -93,18 +196,27 @@ int do_dir_create(struct copy_opts *opts, char *src, char *dst)
 		goto failed;
 	}
 
-	if (S_ISLNK(st_buff.st_mode) && !opts->opt_follow_sym) {
-		/* TODO:create symblic here */
-		goto out;
+	if (mkdir(dst, st_buff.st_mode)) {
+		if (errno != EEXIST) {
+			eprint("Can not create dir:%s.(%s)\n", 
+								dst, strerror(errno));
+			goto failed;
+		}
 	}
 
-	if (mkdir(dst, st_buff.st_mode)) {
-		eprint("Can not create dir:%s.(%s)\n", 
-							dst, strerror(errno));
-		goto failed;
-	}
-out:
 	chmod(dst, st_buff.st_mode);
+
+	if (opts->opt_cp_own)
+		if (__do_own_copy(src, dst))
+			goto failed;
+
+	if (opts->opt_cp_xattr)
+		if (__do_xattr_copy(src, dst))
+			goto failed;
+
+	if (opts->opt_cp_battr)
+		if (__do_battr_copy(src, dst))
+			goto failed;
 
 	return 0;
 failed:
@@ -113,8 +225,21 @@ failed:
 
 int do_dir_revise(struct copy_opts *opts, char *src, char *dst)
 {
-	vprint("revice dir:%s\n", dst);
+	if (opts->opt_cp_own)
+		if (__do_own_copy(src, dst))
+			goto failed;
+
+	if (opts->opt_cp_xattr)
+		if (__do_xattr_copy(src, dst))
+			goto failed;
+
+	if (opts->opt_cp_battr)
+		if (__do_battr_copy(src, dst))
+			goto failed;
+
 	return 0;
+failed:
+	return 1;
 }
 
 int __do_data_copy(char *src, char *dst)
@@ -151,14 +276,17 @@ int __do_data_copy(char *src, char *dst)
 		if (nread == 0) {
 			ret = 0;
 			break;
-		}
-		if (nread < 0) 
+		} else if (nread < 0) {
+			eprint("Read from:%s error.(%s)\n", fd_src, strerror(errno));
 			goto fail4;
+		}
 		pbuf = buf;
 		while (nread) {
 			nwrite = write(fd_dst, pbuf, nread);
-			if (nwrite <= 0)
+			if (nwrite <= 0) {
+				eprint("Write to:%s error.(%s)\n", fd_src, strerror(errno));
 				goto fail4;
+			}
 			pbuf += nwrite;
 			nread -= nwrite;
 		}
@@ -176,23 +304,13 @@ fail1:
 	return ret;
 }
 
-int __do_battr_copy(char *src, char *dst)
-{
-	return 0;
-}
-
-int __do_xattr_copy()
-{
-	return 0;
-}
-
 int do_file_copy(struct copy_opts *opts, char *src, char *dst)
 {
 	struct stat st_dst;
 
-	vprint("copy :%s => %s\n", src, dst);
+	vprint("f:%s => %s\n", src, dst);
 
-	if (mstat(dst, &st_dst)) {
+	if (!mstat(dst, &st_dst)) {
 		if (opts->opt_force) {
 			remove(dst);
 		} else {
@@ -204,12 +322,16 @@ int do_file_copy(struct copy_opts *opts, char *src, char *dst)
 	if (__do_data_copy(src, dst))
 		goto failed;
 
-	if (opts->opt_cp_battr)
-		if (__do_battr_copy(src, dst))
+	if (opts->opt_cp_own)
+		if (__do_own_copy(src, dst))
 			goto failed;
 
 	if (opts->opt_cp_xattr)
 		if (__do_xattr_copy(src, dst))
+			goto failed;
+
+	if (opts->opt_cp_battr)
+		if (__do_battr_copy(src, dst))
 			goto failed;
 
 	return 0;
@@ -220,12 +342,55 @@ failed:
 int do_link_create(struct copy_opts *opts, char *src, char *dst)
 {
 	struct stat st_buff;
+	char *addr_buf;
+	int ret = 1;
 
-	chmod(dst, st_buff.st_mode);
+	vprint("l:%s => %s\n", src, dst);
 
-	return 0;
-failed:
-	return 1;
+	if (!mstat(dst, &st_buff)) {
+		if (opts->opt_force) {
+			remove(dst);
+		} else {
+			eprint("File:%s exist. Try --force\n", dst);
+			goto fail1;
+		}
+	}
+
+	addr_buf = (char *)calloc(1, PATH_MAX);
+	if (!addr_buf) {
+		eprint("No memory.\n");
+		goto fail1;
+	}
+
+	if (readlink(src, addr_buf, PATH_MAX) < 0) {
+		eprint("Can not read link:%s.(%s)\n", src, strerror(errno));
+		goto fail2;
+	}
+
+	if (symlink(addr_buf, dst)) {
+		eprint("Can not create link:%s=>%s.(%s)\n", 
+							dst, addr_buf, strerror(errno));
+		goto fail2;
+	}
+
+	if (opts->opt_cp_own)
+		if (__do_own_copy(src, dst))
+			goto fail2;
+
+	if (opts->opt_cp_xattr)
+		if (__do_xattr_copy(src, dst))
+			goto fail2;
+
+	if (opts->opt_cp_battr)
+		if (__do_battr_copy(src, dst))
+			goto fail2;
+
+	ret = 0;
+
+fail2:
+	free(addr_buf);
+fail1:
+	return ret;
 }
 
 int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
@@ -233,7 +398,6 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
 	struct dstack *ds;
 	struct stat st_buff;
 	char *src_name = NULL;
-	char *dst_name = NULL;
 	char *src_buff = NULL;
 	char *dst_buff = NULL;
 	char *psrc_buff = NULL;
@@ -261,21 +425,25 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
 			return 1;
 		}
 	} else {
-		if (IS_DST_EXIST(flags) ) {
+		if (!IS_SRC_EXIST(flags)) {
+			eprint("src not exist!\n");
+			return 1;
+		}
+
+		if (IS_DST_EXIST(flags)) {
 			if (!IS_DST_DIR(flags)) {
-				/* Dst exist, and is a file, do the copy directly. */
-				return do_file_copy(opts, src_path, dst_path);
-			}
-		} else {
-			if (IS_SRC_EXIST(flags)) {
 				if (IS_SRC_DIR(flags)) {
-					do_dir_create(opts, src_path, dst_path);
+					eprint("Can not directory to a file.\n");
+					return 1;
 				} else {
 					return do_file_copy(opts, src_path, dst_path);
 				}
+			}
+		} else {
+			if (IS_SRC_DIR(flags)) {
+				do_dir_create(opts, src_path, dst_path);
 			} else {
-				eprint("src not exist!\n");
-				return 1;
+				return do_file_copy(opts, src_path, dst_path);
 			}
 		}
 	}
@@ -302,7 +470,12 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
 
 		if (ret) {
 			eprint("file:%s not exist!\n", src_buff);
+			goto failed;
 		} else if (S_ISDIR(st_buff.st_mode)) {
+			if (!opts->opt_cp_dir) {
+				eprint("%s is a directory, try option -r.\n", src_buff);
+				goto failed;
+			}
 			dstack_cflist_prev(ds);
 			dstack_push_dir(ds);
 			listdir(src_buff, ds);
@@ -316,7 +489,7 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
 				goto failed;
 		} else {
 			/* If we don't know the file type, do nothing. */
-			vprint("Unknown file type!:%s\n", src_buff);
+			eprint("Unknown file type:%s\n", src_buff);
 		}
 
 clean:

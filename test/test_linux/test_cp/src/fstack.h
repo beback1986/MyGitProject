@@ -54,7 +54,7 @@ struct dstack * dstack_new();	//impl
 int dstack_isempty(struct dstack *ds);
 int dstack_push_dir(struct dstack *ds);	//impl
 int dstack_pop_dir(struct dstack *ds);
-int * dstack_cflist_next(struct dstack *ds, char *pbuff); //impl
+int dstack_cflist_next(struct dstack *ds, char *pbuff); //impl
 int dstack_cflist_prev(struct dstack *ds);
 int dstack_cflist_add(struct dstack *ds, const char *filename); //impl
 

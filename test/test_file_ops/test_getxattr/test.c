@@ -6,7 +6,7 @@
 
 #define BUF_SIZE 300
 
-#define FILE_PATH "/mnt/volumes/vol-2/test/sn_beta_2/readme"
+#define FILE_PATH "Makefile"
 
 int main (int argc, char *argv[])
 {
@@ -23,9 +23,9 @@ int main (int argc, char *argv[])
 
 //	ret = getxattr(FILE_PATH, "user.glusterfs-booster-mount", value, 100);
 //	ret = getxattr(FILE_PATH, "glusterfs.content", value, 100);
-//	ret = getxattr(FILE_PATH, "security.selinux", value, 300);
+	ret = getxattr(FILE_PATH, "security.selinux", value, 300);
 //	ret = getxattr(FILE_PATH, "glusterfs.inodelk-count", value, 300);
-	ret = getxattr(FILE_PATH, "trusted.glusterfs.dht.linkto", value, BUF_SIZE);
+//	ret = getxattr(FILE_PATH, "trusted.glusterfs.dht.linkto", value, BUF_SIZE);
 //	ret = getxattr(FILE_PATH, "trusted.afr.127.0.0.1-2", value, 300);
 	POSITIVE_OR_RETURN(ret, "can not get xattr");
 

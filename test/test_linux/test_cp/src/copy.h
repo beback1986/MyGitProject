@@ -51,6 +51,8 @@ struct copy_opts {
 	int opt_cp_battr;
 	/* If true, copy all extend attrs to the destnation file. */
 	int opt_cp_xattr;
+	/* If true, copy all uid gid attrs to the destnation file. */
+	int opt_cp_own;
 	/* If true, force to replace a file that has a duplication name. */
 	int opt_force;
 };

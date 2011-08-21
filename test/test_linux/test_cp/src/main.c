@@ -28,7 +28,20 @@
 
 void usage()
 {
-	printf("usage:\n");
+	printf("Usage: mcp [OPTIONS] SOURCE... DEST\n");
+	printf("Options:\n");
+	printf("      --base-attr     copy mtime & atime attribute\n");
+	printf("      --ext-attr      copy extend attribute\n");
+	printf("      --own-attr      copy uid & gid attribute\n");
+	printf("  -f, --force         force to copy, replace duplicate files\n");
+	printf("  -r, --recursive     copy directories recursively\n");
+	printf("  -s                  follow symbolic instead of make link\n");
+	printf("  -v, --verbose       print all actions which is taking place\n");
+	printf("\n");
+	printf("  -h, --help    print this help text\n");
+	printf("\n");
+
+	exit(0);
 }
 
 struct src_list {
@@ -48,8 +61,16 @@ int get_opts(int argc, char *argv[], struct copy_opts *opts, struct src_list *sr
 				opts->opt_cp_battr = 1;
 			else if (strcmp(argv[i], "--ext-attr") == 0)
 				opts->opt_cp_xattr = 1;
+			else if (strcmp(argv[i], "--own-attr") == 0)
+				opts->opt_cp_own = 1;
 			else if (strcmp(argv[i], "--force") == 0)
 				opts->opt_force = 1;
+			else if (strcmp(argv[i], "--recursive") == 0)
+				opts->opt_cp_dir = 1;
+			else if (strcmp(argv[i], "--verbose") == 0)
+				set_verbose(1);
+			else if (strcmp(argv[i], "--help") == 0)
+				usage();
 			else {
 				eprint("Unkown option:%s\n", argv[i]);
 				return 1;
@@ -61,8 +82,12 @@ int get_opts(int argc, char *argv[], struct copy_opts *opts, struct src_list *sr
 					opts->opt_cp_dir = 1;
 				else if (argv[i][j] == 's')
 					opts->opt_follow_sym = 1;
+				else if (argv[i][j] == 'f')
+					opts->opt_force = 1;
 				else if (argv[i][j] == 'v')
 					set_verbose(1);
+				else if (argv[i][j] == 'h')
+					usage();
 				else {
 					eprint("Unkown option:-%c\n", argv[i][j]);
 					return 1;
@@ -75,7 +100,7 @@ int get_opts(int argc, char *argv[], struct copy_opts *opts, struct src_list *sr
 	}
 	if (src_list->len < 2) {
 		eprint("Missing operand.\n");
-		return 1;
+		usage();
 	}
 	(*dst) = src_list->list[(src_list->len--) - 1];
 	return 0;
@@ -100,10 +125,7 @@ int get_env(const struct src_list *src_list, const char *dst)
 		SET_DST_EXIST(flags);
 		if (S_ISDIR(st_buff.st_mode)) {
 			SET_DST_DIR(flags);
-		} else if (S_ISLNK(st_buff.st_mode)) {
-			/* TODO: Follow symbolic to see if it's directory. */
-			S_ISLNK(st_buff.st_mode);
-		}
+		} 
 	}
 
 	return flags;
@@ -111,20 +133,22 @@ int get_env(const struct src_list *src_list, const char *dst)
 
 int main(int argc, char *argv[])
 {
-	struct copy_opts opts;
+	struct copy_opts *opts;
 	struct src_list src_list;
 	char *dst = NULL;
 	int flags;
 	int i;
 
-	if (get_opts(argc, argv, &opts, &src_list, &dst))
+	opts = (struct copy_opts *)calloc(1, sizeof(struct copy_opts));
+
+	if (get_opts(argc, argv, opts, &src_list, &dst))
 		return 1;
 
 	flags = get_env(&src_list, dst);
 
 	for (i=0; i<src_list.len; i++) {
-		vprint("Begin copy, src:%s, dst:%s\n", src_list.list[i], dst);
-		if (copy(&opts, src_list.list[i], dst, flags))
+		vprint("Copy from:%s, to:%s\n", src_list.list[i], dst);
+		if (copy(opts, src_list.list[i], dst, flags))
 			return 1;
 	}
 

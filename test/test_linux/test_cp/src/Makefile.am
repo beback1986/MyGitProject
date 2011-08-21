@@ -1,10 +1,11 @@
 ## Process this file with automake to produce Makefile.in
 
-DIST_COMMON = 
 EXTRA_DIST = 
 
 bin_PROGRAMS = mcp
 mcp_SOURCES = copy.c fstack.c main.c log.c
+
+noinst_HEADERS = copy.h fstack.h log.h
 
 #hello_LDADD		= ${top_srcdir}/lib/libhello.la
 
