@@ -16,6 +16,8 @@
  * =====================================================================================
  */
 
+#ifndef __COPY_H__
+#define __COPY_H__
 
 /* Options for copy. */
 struct copy_opts {
@@ -31,3 +33,7 @@ struct copy_opts {
 	/* If true, force to replace a file that has a duplication name. */
 	int opt_force;
 };
+
+int copy(struct copy_opts *opts, char *src_path, char *dst_path, int is_dst_dir);
+
+#endif /* __COPY_H__ */

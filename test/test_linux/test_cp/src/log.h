@@ -16,6 +16,8 @@
  * =====================================================================================
  */
 
+#ifndef __LOG_H_
+#define __LOG_H_
 
 /* Set 1 enable verbose mode, set 0 to disable verbose mode. */
 void set_verbose(int key);
@@ -23,3 +25,5 @@ void set_verbose(int key);
 int vprint(const char *format, ...);
 /* Print error messages. */
 int eprint(const char *format, ...);
+
+#endif /* __LOG_H_ */

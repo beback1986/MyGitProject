@@ -16,7 +16,13 @@
  * =====================================================================================
  */
 
+#include "copy.h"
 
 int main(int argc, char *argv[])
 {
+	struct copy_opts opts;
+
+	set_verbose(1);
+	copy(&opts, "test", "test2", 1);
+	return 0;
 }

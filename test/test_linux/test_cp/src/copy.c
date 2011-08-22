@@ -16,9 +16,17 @@
  * =====================================================================================
  */
 
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <linux/limits.h>
 #include <unistd.h>
+#include <libgen.h>
+#include <dirent.h>
+#include <string.h>
 
+#include "fstack.h"
+#include "log.h"
+#include "copy.h"
 
 int listdir(char *dir_path, struct dstack *ds)
 {
@@ -67,7 +75,7 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int is_dst_dir)
 	char *src_base_path;
 	char *dst_base_path;
 	char *filename;
-	char pa_buff[PATH_MAX];
+	char *pa_buff;
 	char *pbuff = NULL;
 	int ret;
 	int src_base_len;
@@ -83,38 +91,44 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int is_dst_dir)
 		if (S_ISDIR(dst_st.st_mode))
 			dst_base_path = strdup(dst_path);
 		else
+			dst_base_path = strdup(dst_path);
 	}
 
 	ds = dstack_new();
-	dstack_push_flist(ds);
+	dstack_push_dir(ds);
 
+	pa_buff = (char *)calloc(1, PATH_MAX);
 	src_base_path = dirname(src_path);
-	filename = basename(src_path);
-	dstack_cflist_add(ds, filename);
-
+	filename      = basename(src_path);
 	strcpy(pa_buff, src_base_path);
-	src_base_len = strlen(src_base_path);
+	src_base_len  = strlen(src_base_path);
 	pbuff = pa_buff + src_base_len;
 
-	while (!dstack_empty(ds)) {
+	dstack_cflist_add(ds, filename);
+
+	while (!dstack_isempty(ds)) {
 		if (!dstack_cflist_next(ds, pbuff)) {
 			dstack_pop_dir(ds);
 			do_dir_revise();
 			continue;
 		}
 		ret = stat(pa_buff, &st_buff);
-		if (S_ISDIR(st_buff.st_mode)) {
+		vprint("stat file:%s\n", pa_buff);
+		if (ret) {
+			vprint("");
+		}
+		else if (S_ISDIR(st_buff.st_mode)) {
 			listdir(pa_buff, ds);  //Sort all files by name
 			do_dir_create();
 		}
-		else if (is_file ¦¦ is_symbol) {
+		else if (S_ISREG(st_buff.st_mode) || S_ISLNK(st_buff.st_mode)) {
 			do_file_copy();
 		}
 		else {
 			/* If we don't know the file type, do nothing. */
-			print("Unknown file type!");
+			vprint("Unknown file type!:%s\n", pa_buff);
 		}
-		memset(pbuff, '\0', MAX_PATH-src_base_len);
+		memset(pbuff, '\0', PATH_MAX-src_base_len);
 	}
 	return 0;
 }

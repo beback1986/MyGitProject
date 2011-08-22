@@ -3,8 +3,8 @@
 DIST_COMMON = 
 EXTRA_DIST = 
 
-bin_PROGRAMS		= cp
-cp_SOURCES		= cp.c
+bin_PROGRAMS = cp
+cp_SOURCES = copy.c fstack.c main.c log.c
 
 #hello_LDADD		= ${top_srcdir}/lib/libhello.la
 

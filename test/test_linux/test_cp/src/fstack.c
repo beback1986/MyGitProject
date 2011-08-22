@@ -16,6 +16,9 @@
  * =====================================================================================
  */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "fstack.h"
 
 struct flist_node *__flist_node_new(const char *filename)
@@ -84,7 +87,7 @@ char *flist_next(struct flist *fl)
 	if (!fl)
 		goto failed;
 	if (fl->cur_pos) {
-		ret = fl->cur_pos;
+		ret = fl->cur_pos->filename;
 		fl->cur_pos = fl->cur_pos->next;
 	}
 	return ret;
@@ -94,6 +97,8 @@ failed:
 
 char * flist_current(struct flist *fl)
 {
+	if (!fl || !fl->cur_pos)
+		return NULL;
 	return fl->cur_pos->filename;
 }
 
@@ -119,7 +124,7 @@ struct dstack *dstack_new()
 	ds->tail = NULL;
 	return ds;
 }
-int dstack_isempty(struct dstatck *ds)
+int dstack_isempty(struct dstack *ds)
 {
 	if (!ds || !ds->head)
 		return 1;
@@ -141,9 +146,11 @@ int dstack_push_dir(struct dstack *ds)
 		goto failed_dn;
 
 	dn->next = ds->head;
-	dn->next->prev = ds->head = dn;
+	ds->head = dn;
+	if (dn->next)
+		dn->next->prev = dn;
 	if (!ds->tail)
-		ds->tail = dn
+		ds->tail = dn;
 
 	return 0;
 failed_dn:
@@ -151,6 +158,7 @@ failed_dn:
 failed:
 	return 1;
 }
+
 int dstack_pop_dir(struct dstack *ds)
 {
 	struct dstack_node *dn;
@@ -159,8 +167,15 @@ int dstack_pop_dir(struct dstack *ds)
 		goto failed;
 
 	dn = ds->head;
+	if (!dn)
+		/* Reach the botton of the stack */
+		goto failed;
 	ds->head = ds->head->next;
-	dn->next->prev = NULL;
+	if (dn->next)
+		dn->next->prev = NULL;
+	else
+		/* This node is the last one in stack... */
+		ds->tail = NULL;
 	flist_free(dn->fl);
 	free(dn);
 	return 0;
@@ -178,11 +193,16 @@ char *dstack_cflist_next(struct dstack *ds, char *pbuff)
 
 	dn = ds->tail;
 	while (dn) {
-		pbuff = flist_current(dn->fl);
+		filename = flist_current(dn->fl);
+		if (!filename)
+			goto failed;
+		pbuff = strcat(pbuff, "/");
 		pbuff = strcat(pbuff, filename);
+		dn = dn->prev;
 	}
 
-	filename = flist_next(ds->head);
+	if (ds->head)
+		filename = flist_next(ds->head->fl);
 	return pbuff;
 failed:
 	return NULL;
@@ -190,10 +210,10 @@ failed:
 
 int dstack_cflist_add(struct dstack *ds, const char *filename)
 {
-	if (!ds)
+	if (!ds || !ds->head)
 		goto failed;
 
-	return flist_add(ds->head, filename);
+	return flist_add(ds->head->fl, filename);
 failed:
 	return NULL;
 }
