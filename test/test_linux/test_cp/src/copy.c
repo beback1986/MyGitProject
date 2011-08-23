@@ -25,6 +25,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "fstack.h"
 #include "log.h"
@@ -66,6 +67,20 @@ int mstat(const char *path, struct stat *buf)
 	return lstat(path, buf);
 }
 
+/* Base attr copy function for all file types.
+ */
+int __do_battr_copy(char *src, char *dst)
+{
+	return 0;
+}
+
+/* Extend attr copy function for all file types.
+ */
+int __do_xattr_copy(char *src, char *dst)
+{
+	return 0;
+}
+
 int do_dir_create(struct copy_opts *opts, char *src, char *dst)
 {
 	struct stat st_buff;
@@ -73,7 +88,7 @@ int do_dir_create(struct copy_opts *opts, char *src, char *dst)
 	vprint("create dir:%s\n", dst);
 
 	if (mstat(src, &st_buff)) {
-		eprint("File:%s wrong stat, %s\n",
+		eprint("File:%s wrong stat.(%s)\n",
 							dst, strerror(errno));
 		goto failed;
 	}
@@ -84,12 +99,13 @@ int do_dir_create(struct copy_opts *opts, char *src, char *dst)
 	}
 
 	if (mkdir(dst, st_buff.st_mode)) {
-		eprint("Can not create dir:%s, reason:%s\n", 
+		eprint("Can not create dir:%s.(%s)\n", 
 							dst, strerror(errno));
 		goto failed;
 	}
-
 out:
+	chmod(dst, st_buff.st_mode);
+
 	return 0;
 failed:
 	return 1;
@@ -101,17 +117,100 @@ int do_dir_revise(struct copy_opts *opts, char *src, char *dst)
 	return 0;
 }
 
+int __do_data_copy(char *src, char *dst)
+{
+	struct stat st_src;
+	char *buf;
+	char *pbuf;
+	int fd_src;
+	int fd_dst;
+	int nread;
+	int nwrite;
+	int ret = 1;;
+
+	if (mstat(src, &st_src)) {
+		eprint("File:%s not exist(%s)\n", dst, strerror(errno));
+		goto fail1;
+	}
+
+	if ((fd_src=open(src, O_RDONLY)) < 0) {
+		eprint("Can not open file:%s(%s)\n", dst, strerror(errno));
+		goto fail1;
+	}
+	if ((fd_dst=open(dst, O_WRONLY|O_CREAT, st_src.st_mode)) < 0) {
+		eprint("Can not open file:%s(%s)\n", dst, strerror(errno));
+		goto fail2;
+	}
+	if (!(buf=(char *)calloc(1, BUFFER_SIZE))) {
+		eprint("Can not alloc memory!\n");
+		goto fail3;
+	}
+
+	while (1) {
+		nread = read(fd_src, buf, BUFFER_SIZE);
+		if (nread == 0) {
+			ret = 0;
+			break;
+		}
+		if (nread < 0) 
+			goto fail4;
+		pbuf = buf;
+		while (nread) {
+			nwrite = write(fd_dst, pbuf, nread);
+			if (nwrite <= 0)
+				goto fail4;
+			pbuf += nwrite;
+			nread -= nwrite;
+		}
+	}
+
+	chmod(dst, st_src.st_mode);
+
+fail4:
+	free(buf);
+fail3:
+	close(fd_dst);
+fail2:
+	close(fd_src);
+fail1:
+	return ret;
+}
+
+int __do_battr_copy(char *src, char *dst)
+{
+	return 0;
+}
+
+int __do_xattr_copy()
+{
+	return 0;
+}
+
 int do_file_copy(struct copy_opts *opts, char *src, char *dst)
 {
-	struct stat st_buff;
+	struct stat st_dst;
 
 	vprint("copy :%s => %s\n", src, dst);
 
-	if (mstat(src, &st_buff)) {
-		eprint("File:%s wrong stat, %s\n",
-							dst, strerror(errno));
-		goto failed;
+	if (mstat(dst, &st_dst)) {
+		if (opts->opt_force) {
+			remove(dst);
+		} else {
+			eprint("File:%s exist. Try --force\n", dst);
+			goto failed;
+		}
 	}
+
+	if (__do_data_copy(src, dst))
+		goto failed;
+
+	if (opts->opt_cp_battr)
+		if (__do_battr_copy(src, dst))
+			goto failed;
+
+	if (opts->opt_cp_xattr)
+		if (__do_xattr_copy(src, dst))
+			goto failed;
 
 	return 0;
 failed:
@@ -120,7 +219,13 @@ failed:
 
 int do_link_create(struct copy_opts *opts, char *src, char *dst)
 {
+	struct stat st_buff;
+
+	chmod(dst, st_buff.st_mode);
+
 	return 0;
+failed:
+	return 1;
 }
 
 int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
@@ -203,11 +308,11 @@ int copy(struct copy_opts *opts, char *src_path, char *dst_path, int flags)
 			listdir(src_buff, ds);
 			if (do_dir_create(opts, src_buff, dst_buff))
 				goto failed;
-		} else if (S_ISREG(st_buff.st_mode)) {
-			if (do_file_copy(opts, src_buff, dst_buff))
-				goto failed;
 		} else if (S_ISLNK(st_buff.st_mode)) {
 			if (do_link_create(opts, src_buff, dst_buff))
+				goto failed;
+		} else if (S_ISREG(st_buff.st_mode)) {
+			if (do_file_copy(opts, src_buff, dst_buff))
 				goto failed;
 		} else {
 			/* If we don't know the file type, do nothing. */

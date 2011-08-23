@@ -37,6 +37,9 @@
 #define SET_SRC_EXIST(flags) {flags |= SRC_EXIST;}
 #define SET_SRC_DIR(flags)   {flags |= SRC_DIR;}
 
+
+#define BUFFER_SIZE 32708
+
 /* Options for copy. */
 struct copy_opts {
 	/* If true, copy directories recursive. */
