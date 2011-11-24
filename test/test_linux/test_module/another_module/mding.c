@@ -12,7 +12,7 @@
 
 #define TEST_FILE "/home/beback/test_fs"
 
-static void read_file(char *filename)
+void read_file(char *filename)
 {
 	long (*sys_open)(const char *,int,int);
 	long (*sys_read)(unsigned int,char *,size_t);
@@ -62,8 +62,9 @@ static void read_file(char *filename)
 	}*/
 	set_fs(old_fs);
 }
+EXPORT_SYMBOL(read_file);
 
-static void test_file(const char * filename)
+void test_file(const char * filename)
 {
 	mm_segment_t old_fs;
 	struct file *file = NULL;
@@ -94,10 +95,17 @@ static void test_file(const char * filename)
 
 	return ;
 }
-extern void hello_func(void);
+EXPORT_SYMBOL(test_file);
+
+void hello_func(void)
+{
+	printk("hello_func is called!!!!!!!!\n");
+}
+EXPORT_SYMBOL(hello_func);
+
 static int mding_init(void)
 {
-	hello_func();
+	printk("mding init!!!\n");
 	return 0;
 }
 
@@ -110,6 +118,6 @@ module_init(mding_init);
 module_exit(mding_exit);
 
 
-MODULE_LICENSE("Dual BSD/GPL");
-//MODULE_LICENSE("GPL");
+//MODULE_LICENSE("Dual BSD/GPL");
+MODULE_LICENSE("GPL");
 MODULE_AUTHOR("beback");

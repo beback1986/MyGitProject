@@ -24,3 +24,4 @@ clean:
 	$(shell rm -f mding.ko)
 	$(shell rm -f mding.mod.c)
 	$(shell rm -f mding.mod.o)
+	$(shell rm -rf .mding.* Module.symvers modules.order .tmp_versions/ Module.symvers)

@@ -5,6 +5,19 @@ struct node {
 	char hello[10];
 };
 
+void test_long(void)
+{
+	long l;
+	void *p;
+	unsigned long ul;
+
+	l = -1000;
+	ul = l;
+	printf("ul=%lx\n", ul);
+	p = (void *)ul;
+	printf("p=%p\n", p);
+}
+
 int
 main(void)
 {
@@ -13,11 +26,8 @@ main(void)
 	struct node n[2];
 	void *p;
 
-	memset(n[0].hello, 0, 10);
-	memset(n[1].hello, 0, 10);
-
-	memcpy(n[0].hello, "123456", 6);
-	memcpy(n[1].hello, "abcdef", 6);
+	strcpy(n[0].hello, "123456");
+	strcpy(n[1].hello, "abcdef");
 
 	p = n;
 
@@ -27,6 +37,8 @@ main(void)
 	printf("%s\n", p);
 
 	i = p;
+
+	test_long();
 
 	return 0;
 }

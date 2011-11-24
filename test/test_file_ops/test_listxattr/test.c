@@ -6,7 +6,7 @@
 
 #define BUF_SIZE 500
 
-#define FILE_PATH "Makefile"
+#define FILE_PATH "/fs_share/fs1/hello"
 
 int main (int argc, char *argv[])
 {

@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
 
 	printf("sizeof long int:%d\n", sizeof(long int));
 	printf("sizeof long long int:%d\n", sizeof(long long int));
+	printf("sizeof unsigned long:%d\n", sizeof(unsigned long));
 	printf("sizeof uint64_t:%d\n", sizeof(u_int64_t));
 
 	printf("sizeof tv.tv_sec:%d\n", sizeof(tv.tv_sec));

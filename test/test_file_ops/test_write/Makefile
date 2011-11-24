@@ -1,2 +1,4 @@
-default:
-	gcc -I../include test_iospeed.c 
+CFLAGS=-Wall
+
+all:
+	gcc $(CFLAGS) -lpthread test_iospeed.c

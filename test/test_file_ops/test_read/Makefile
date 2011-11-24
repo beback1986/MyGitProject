@@ -1,2 +1,2 @@
 default:
-	gcc -I../include test.c
+	gcc -Wall -I../include test.c

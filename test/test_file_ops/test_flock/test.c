@@ -2,11 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#define OPEN_MODE (O_RDWR|O_CREAT)
 
 int main(int argc, char *argv[])
 {
 	int fd;
-	FILE *fp;
 	char *filepath;
 	char *buf;
 
@@ -17,15 +19,15 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	filepath = strdup(argv[1]);
-	fp = fopen(filepath, "w+");
-	fd = fileno(fp);
+	fd = open(filepath, OPEN_MODE);
 	if (flock(fd, LOCK_EX) == -1) 
 		printf("can not lock file\n");
 	scanf("%s", buf);
 
 	if (flock(fd, LOCK_UN) == -1)
 		printf("can not unlock file\n");
-	fclose(fp);
+	close(fd);
 
 	return 0;
 }
+
