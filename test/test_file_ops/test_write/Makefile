@@ -1,4 +1,4 @@
 CFLAGS=-Wall
 
 all:
-	gcc $(CFLAGS) -lpthread test_iospeed.c
+	gcc $(CFLAGS) -lpthread test.c
