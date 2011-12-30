@@ -1,2 +1,4 @@
+CFLAGS=-g -O0 -Wall -lpthread
+
 default:
-	gcc test.c
+	gcc ${CFLAGS} test.c
