@@ -1,2 +1,4 @@
+CFLAGS=-g -O0 -Wall -D_GNU_SOURCE -D_BSD_SOURCE
+
 default:
-	gcc -Wall -I../include test.c
+	gcc ${CFLAGS} -lpthread -I../include test.c

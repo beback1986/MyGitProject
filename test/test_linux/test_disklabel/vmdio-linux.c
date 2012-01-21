@@ -1,150 +1,136 @@
 /*
- * Linux implemention
+ * =====================================================================================
+ *
+ *       Filename:  vmdio-linux.c
+ *
+ *    Description:  
+ *
+ *        Version:  1.0
+ *        Created:  01/12/2012 01:10:03 PM
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Dingyuan
+ *        Company:  BWSTOR
+ *
+ * =====================================================================================
  */
 
-//#include <config.h>
-#define _LARGEFILE64_SOURCE
-#define _GNU_SOURCE
-#define _FILE_OFFSET_BITS 64
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
-#include <unistd.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
 #include <aio.h>
-#include <string.h>
-#include <syslog.h>
-#include <inttypes.h>
+#include <errno.h>
+
 #include "vmdio.h"
 
-#define IO_WAIT_TIME 1
+#define __BWVMDIO_MAX_TIMEO 3
 
-static struct aiocb64 * set_aiocb(int fd, vmdio_offset_t offset, vmdio_length_t length, void *data)
+bwvmdio_device_t *bwvmdio_open_dev(const char *dev)
 {
-	static struct aiocb64 cb;
+	int fd;
+	bwvmdio_device_t *bwdev = NULL;
 
-	memset(&cb, 0, sizeof(struct aiocb64));
-
-	cb.aio_fildes = fd;
-	cb.aio_buf = data;
-	cb.aio_nbytes = length;
-	cb.aio_offset = offset;
-
-	return &cb;
-}
-
-static int
-do_fd_io(int fd, vmdio_offset_t offset, vmdio_length_t length, void *data, int w)
-{
-	ssize_t 	n;
-	struct aiocb64 	*cb;
-	const struct timespec timeout = {
-					.tv_sec = IO_WAIT_TIME,
-					.tv_nsec = 0
-				 };
-		
-	cb = set_aiocb(fd, offset, length, data);
-
-	if(w){
-		if (aio_write64(cb) == -1)
-			return VMDIO_EWRITEDEV;
-write_suspend:
-		if (aio_suspend64(&cb, 1, &timeout)) {
-			if (aio_error64(cb) == EINPROGRESS)
-				goto write_suspend;
-			if (aio_error64(cb) == 0)
-				goto write_finish;
-			else
-				return VMDIO_EWRITEDEV;
-		}
-write_finish:
-		if ((n = aio_return64(cb)) != length)
-			return VMDIO_EWRITEDEV;	
-	} else {
-		if (aio_read64(cb) == -1)
-			return VMDIO_EREADDEV;
-read_suspend:
-		if (aio_suspend64(&cb, 1, &timeout)){
-			if (aio_error64(cb) == EINPROGRESS){
-				syslog(LOG_USER | LOG_INFO, "Continue suspend for 1 second.\n");
-				goto read_suspend;
-			}
-			if (aio_error64(cb) == 0){
-				syslog(LOG_USER | LOG_INFO, "Read finish.Check return value.\n");
-				goto read_finish;
-			}else{
-				syslog(LOG_USER | LOG_INFO, "Read device failed.\n");
-				return VMDIO_EREADDEV;
-			}
-		}
-read_finish:
-		if ((n = aio_return64(cb)) != length)
-			return VMDIO_EREADDEV;	
-	}  
-
-	return 0;
-}
-
-static int
-verify_io_range(vmdio_offset_t offset, vmdio_length_t length, off64_t vsize)
-{
-	if (offset < 0)
-		offset += vsize;
-	if (offset < 0 || offset >= vsize || length > (vsize - offset))
-		return 1;
-	return 0;
-}
-
-static int
-do_io(const char *volume, vmdio_offset_t offset, vmdio_length_t length, void *data, int w)
-{
-	int rc, fd, flags;
-	off64_t vsize;
-
-	if (!volume || !data || !length || (offset < 0 && -offset < length))
-		return VMDIO_ESEEKPOINTER;
-
-	if (w)
-		flags = O_WRONLY|O_SYNC;
-	else
-		flags = O_RDONLY|O_DIRECT;
-	fd = open(volume, flags);
+	fd = open(dev, O_RDONLY);
 	if (fd == -1)
-		return VMDIO_EOPENDEV;
+		goto failed;
 
-	vsize = lseek64(fd, 0, SEEK_END);
-	if (vsize == -1) {
-		rc = VMDIO_ESEEKPOINTER;
-		goto err;
+	bwdev = calloc(1, sizeof(bwvmdio_device_t));
+	if (!bwdev)
+		goto failed;
+
+	bwdev->fd = fd;
+
+failed:
+	return bwdev;
+}
+
+int32_t bwvmdio_close_dev(bwvmdio_device_t *dev)
+{
+	return close(dev->fd);
+}
+
+static inline void __bwvmdio_fill_aio(struct aiocb64 *cb, int fd, uint64_t off, uint32_t len, char *buf)
+{
+	cb->aio_fildes 	= fd;
+	cb->aio_buf	= buf;
+	cb->aio_nbytes	= len;
+	cb->aio_offset	= off;
+}
+
+static inline struct aiocb64 *__bwvmdio_get_aio(int fd, uint64_t off, uint32_t len, char *buf)
+{
+	struct aiocb64 *cb;
+
+	cb = calloc(1, sizeof(struct aiocb64));
+	if (!cb) {
+		printf("Can not alloc mem for aiocb!\n");
+		goto failed;
 	}
-	rc = VMDIO_ESEEKPOINTER;
-	if (verify_io_range(offset, length, vsize))
-		goto err;
 
-	rc = do_fd_io(fd, offset, length, data, w);
-	if (rc)
-		goto err;
+	__bwvmdio_fill_aio(cb, fd, off, len, buf);
 
-	if (close(fd))
-		return VMDIO_ECLOSEDEV;
-
-	return 0;
-
-err:
-	close(fd);
-	return rc;
+failed:
+	return cb;
 }
 
-int
-vmdio_read(const char *volume, vmdio_offset_t offset, vmdio_length_t length, void *data)
+static inline bwvmdio_aio_t *__bwvmdio_get_bwaio(struct aiocb64 *aio)
 {
-	return do_io(volume, offset, length, data, 0);
+	bwvmdio_aio_t *bwaio = NULL;
+
+	bwaio = calloc(1, sizeof(bwvmdio_aio_t));
+	if (!bwaio) {
+		printf("Can not alloc mem for bwaio!\n");
+		goto failed;
+	}
+	bwaio->aiocb = aio;
+
+failed:
+	return bwaio;
 }
 
-int
-vmdio_write(const char *volume, vmdio_offset_t offset, vmdio_length_t length, const void *data)
+int32_t __bwvmdio_wait(struct aiocb64 *cb, const struct timespec *timeo)
 {
-	return do_io(volume, offset, length, (void *) data, 1);
+	aio_suspend64(&cb, 1, timeo);
+	return aio_error64(cb);
+}
+
+int32_t bwvmdio_read(bwvmdio_device_t *dev, uint64_t off, uint32_t len, char *buf, int32_t mode, bwvmdio_aio_t **paio)
+{
+	int32_t ret;
+	struct aiocb64 *cb;
+
+	cb = __bwvmdio_get_aio(dev->fd, off, len, buf);
+
+	ret = aio_read64(cb);
+	if (ret) {
+		printf("aio_read64 fail.\n");
+		goto failed;
+	}
+
+	if (mode == BWVMDIO_ASYNC) {
+		if (!paio) {
+			ret = EINVAL;
+			printf("provide paio parameter in BWVMDIO_ASYNC mode\n");
+			goto failed;
+		}
+		(*paio) = __bwvmdio_get_bwaio(cb);
+	} else { /* Consider other mode to be BWVMDIO_SYNC. */
+		struct timespec timeo = {.tv_sec=__BWVMDIO_MAX_TIMEO,.tv_nsec=0};
+		ret = __bwvmdio_wait(cb, &timeo);
+	}
+
+failed:
+	return ret;
+}
+
+int32_t bwvmdio_wait(bwvmdio_device_t *dev, bwvmdio_aio_t *bwaio, int64_t timeo_sec)
+{
+	struct timespec timeo = {.tv_sec=timeo_sec,.tv_nsec=0};
+
+	printf("begin to wait\n");
+	return __bwvmdio_wait(bwaio->aiocb, &timeo);
 }

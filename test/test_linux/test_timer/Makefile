@@ -1,4 +1,4 @@
 CFLAGS=-Wall
 
 all:
-	gcc ${CFLAGS} test.c -lpthread
+	gcc ${CFLAGS} test.c -lpthread -lrt
