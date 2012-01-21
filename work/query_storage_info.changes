@@ -1,0 +1,103 @@
+<<storage_info_t>> It can provide information about where query_device_info is used.
+bvdm_config.c:340:	struct storage_info_t stor_info;	//Query device exist, no other use.
+bwlc_private.h:267:int query_device_info(char *dev_name, struct storage_info_t *stor_info,	//Interface.
+chk_misc.c:824:int query_device_info(char *dev_name, struct storage_info_t *stor_info, 		//Interface.
+chk_misc.c:846:		bwoss_memset(stor_info, 0, sizeof(struct storage_info_t));
+chk_misc.c:1105:	struct storage_info_t stor_info;	//Create dev_info. Include device_number, harddisk_name, physical_drive_name.
+lblchk.c:432:	struct storage_info_t stor_info;		//Use device_number & harddisk_name to identify a disk.
+
+
+
+
+<<physical_dev_info->dev_number>>
+bwlc_private.h:81:	uint32_t dev_number;
+chk_misc.c:275:			*dev_num = standby_dev->ptr->dev_number;	//Used in physical_dev_get_next_standby_dev().
+chk_misc.c:331:		assert(standby_dev->ptr->dev_number != dev_num);	//Used in physical_dev_list_insert_entry().
+chk_misc.c:373:		if (standby_dev->ptr->dev_number != dev_num)		//Used in physical_dev_list_remove_entry().
+chk_misc.c:1137:	dev_info->dev_number = stor_info.device_number;		//Used in create_dev_info.
+lblchk.c:544:			dev_info, stor_property.serial_num, dev_info->dev_number);	//Invoke insert_entry to insert a device.
+lblchk.c:763:		dev_info->dev_number);					//Invoke remove entry to remove a device.
+lblchk.c:1786:			p_phy_dev_info_new->dev_number = p_phy_dev_info_temp->dev_number;//Copy to a new physical device list.
+
+
+
+<<physical_dev_info->harddisk_name>>
+bvdm_config.c:1068:		bwoss_memcpy(ptmp_mp_device_node->mp_path_info[0].path_name.knrl_name, pdevice_node->harddisk_name, MAX_PATH);
+bwlc_private.h:83:	char *harddisk_name;
+bwlc_private.h:121:	struct physical_dev_list_t *list, char *harddisk_name);
+bwlc_private.h:245:struct physical_dev_list_t *list, char *harddisk_name);
+chk_misc.c:28:		list->find_dev_by_harddisk_name = physical_dev_find_by_harddisk_name;
+chk_misc.c:212:struct physical_dev_list_t *list, char *harddisk_name)
+chk_misc.c:477:	strcpy(ne->pnp_info.info.path_name.knrl_name, dev_info->harddisk_name);
+chk_misc.c:791:	if (dev_info->harddisk_name) 
+chk_misc.c:957:			device_exists = (stricmp(dev_entry->harddisk_name, dev_info->harddisk_name) == 0);
+chk_misc.c:1144:	strcpy(dev_info->harddisk_name, stor_info.harddisk_name);
+chk_misc.c:1213:	strncpy(pnp_info->info.path_name.knrl_name, dev_info->harddisk_name, MAX_PATH - 1);
+disk_info_processor.c:59:			bwoss_strcpy(ptmp_disk_info->harddisk_name, physical_dev_list->ptrs[i]->harddisk_name);
+disk_info_processor.h:47:	char harddisk_name[MAX_PATH];
+lblchk.c:470:		if (bwoss_stricmp(src_dev_info->harddisk_name, stor_info.harddisk_name) == 0) 
+lblchk.c:825:	dev_info = g_labelchecker_data.physical_dev_list->find_dev_by_harddisk_name(
+lblchk.c:1087:				strncpy(dev_entry->harddisk_name, dev->dev->harddisk_name, MAX_PATH - 1);
+lblchk.c:1802:			bwoss_strcpy(p_phy_dev_info_new->harddisk_name, p_phy_dev_info_temp->harddisk_name);
+
+
+
+
+<<physical_dev_info->physical_drive_name>>
+bvdm_config.c:955:		result = read_disk_label(pdevice_node->physical_drive_name, MASTER_LABEL, &device_label);
+bvdm_config.c:992:			result = read_disk_label(pdevice_node->physical_drive_name, BACKUP_LABEL, &device_label);
+bvdm_config.c:1069:		bwoss_memcpy(ptmp_mp_device_node->mp_path_info[0].path_name.user_name, pdevice_node->physical_drive_name, MAX_PATH);
+bwlc_private.h:84:	char *physical_drive_name;
+bwlc_private.h:145:		char *physical_drive_name, struct physical_dev_info *dev_info, int flag);
+bwlc_private.h:257:void __stdcall lun_label_remove(struct lun_label_list_t *list, char *scsi_name, char *physical_drive_name, 
+chk_misc.c:272:			_snprintf(active_info->physical_drive_name, MAX_PATH, "\\\\.\\%s", 
+chk_misc.c:273:				standby_dev->ptr->physical_drive_name);
+chk_misc.c:479:		dev_info->physical_drive_name);
+chk_misc.c:488:								char *physical_drive_name, struct physical_dev_info *dev_info, 
+chk_misc.c:516:					remove_it = (stricmp(physical_drive_name, dev->dev->physical_drive_name) == 0);
+chk_misc.c:800:		dev_info->physical_drive_name = NULL;
+chk_misc.c:895:	_snprintf(dev_name, MAX_PATH - 1, "\\\\.\\%s", dev_info->physical_drive_name);
+chk_misc.c:983:						lun_label_list->remove_entry(lun_label_list, NULL, dev_info->physical_drive_name, dev_info, 0);
+chk_misc.c:1082:			lun_label_list->remove_entry(lun_label_list, NULL, dev_info->physical_drive_name, 
+chk_misc.c:1155:	strcpy(dev_info->physical_drive_name, stor_info.physical_drive_name);
+chk_misc.c:1214:	_snprintf(pnp_info->info.path_name.user_name, MAX_PATH - 1, "\\\\.\\%s", dev_info->physical_drive_name);
+common/vmdio.h:97:	char physical_drive_name[MAX_PATH];
+common/vmdio.h:105:	char physical_drive_name[MAX_PATH];
+common/bwlblchk.h:8:	char physical_drive_name[MAX_PATH];
+disk_info_processor.c:51:			strcat(volume, physical_dev_list->ptrs[i]->physical_drive_name);
+disk_info_processor.c:58:			bwoss_strcpy(ptmp_disk_info->physical_disk_name, physical_dev_list->ptrs[i]->physical_drive_name);
+lblchk.c:487:						NULL, src_dev_info->physical_drive_name, src_dev_info, 0);
+lblchk.c:507:				NULL, src_dev_info->physical_drive_name, src_dev_info, 0);
+lblchk.c:844:			NULL, dev_info->physical_drive_name, dev_info, 
+lblchk.c:1088:				_snprintf(dev_entry->physical_drive_name, MAX_PATH - 1, "\\\\.\\%s", dev->dev->physical_drive_name);
+lblchk.c:1304:						NULL, dev_info->physical_drive_name, dev_info, 0);
+lblchk.c:1481:						NULL, dev_info->physical_drive_name, dev_info, 0);
+lblchk.c:1532:				NULL, dev_info->physical_drive_name, dev_info, 0);
+lblchk.c:1810:			bwoss_strcpy(p_phy_dev_info_new->physical_drive_name, p_phy_dev_info_temp->physical_drive_name);
+options_processor.c:1138:					strcat(volume, physical_dev_list->ptrs[i]->physical_drive_name);
+sdh/sdh.c:339:	ret = _sdh_test_read(item->info.physical_drive_name);
+sdh/sdh.c:366:	ret = handler->sdh_activate(item->info.physical_drive_name);
+sdh/sdh.c:392:				item->info.physical_drive_name, ret, item->all_retry_count, (curr_tick - item->start_tick));
+sdh/sdh.c:421:		ret = _sdh_test_read(item->info.physical_drive_name);
+sdh/sdh_def.h:7:typedef int (*sdh_activate_fn)(char *physical_drive_name);
+sdh/sdh.h:60:	char physical_drive_name[MAX_PATH];
+sdh/alua_sdh.c:62:int alua_sdh_activate(char *physical_drive_name);
+sdh/alua_sdh.c:164:int alua_sdh_activate(char *physical_drive_name)
+sdh/alua_sdh.c:172:	ret = _alua_sdh_dev_create(physical_drive_name, &dev);
+sdh/emc_sdh.c:139:int emc_sdh_activate(char *physical_drive_name);
+sdh/emc_sdh.c:250:int emc_sdh_activate(char *physical_drive_name)
+sdh/emc_sdh.c:260:	ret = _emc_sdh_dev_create(physical_drive_name, &dev);
+sdh/emc_sdh.c:263:		bwoss_log_error("create emc_sdh_dev(%s) failed with error(%d)", physical_drive_name, ret);
+sdh/emc_sdh.c:269:		bwoss_log_info("the lun(%s) has already owned by the controller", physical_drive_name);
+sdh/emc_sdh.c:332:		bwoss_log_info("%s check_sense result(%d)", physical_drive_name, ret);
+sdh/hp_sdh.c:33:int hp_sdh_activate(char *physical_drive_name);
+sdh/hp_sdh.c:123:int hp_sdh_activate(char *physical_drive_name)
+sdh/hp_sdh.c:132:	h = bwoss_create_file(physical_drive_name, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+sdh/rdac_sdh.c:157:int rdac_sdh_activate(char *physical_drive_name);
+sdh/rdac_sdh.c:287:int rdac_sdh_activate(char *physical_drive_name)
+sdh/rdac_sdh.c:302:	ret = _rdac_sdh_dev_create(physical_drive_name, &dev);
+vdmio/vmdio-windows.c:784:	memset(stor_info->physical_drive_name, 0, MAX_PATH);
+vdmio/vmdio-windows.c:785:	_snprintf(stor_info->physical_drive_name, MAX_PATH, "PhysicalDrive%d", sdn.DeviceNumber);
+vdmio/vmdio-windows.c:787:	if (!QueryDosDevice(stor_info->physical_drive_name, stor_info->harddisk_name, MAX_PATH)) {
+vdmio/vmdio-windows.c:1319:						_snprintf(dev_entry->physical_drive_name, MAX_PATH, 
+vdmio/vmdio-windows.c:1323:						if (!QueryDosDevice(dev_entry->physical_drive_name, 
