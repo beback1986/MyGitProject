@@ -2,15 +2,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <pthread.h>
 #include <errno.h>
 #include <string.h>
 
-#include "error_handle.h"
+//#include "error_handle.h"
 
 #define BUF_SIZE 4096
-
-#define OPEN_MODE (O_RDONLY)
 
 #if 0
 /*
@@ -101,6 +100,18 @@ struct options {
 	size_t	 block_size;
 };
 
+#define DEFAULT_READ_THREAD_NUM (1)
+#define DEFAULT_WRITE_THREAD_NUM (1)
+#define DEFAULT_BLOCK_SIZE (32)
+
+void print_help(void)
+{
+	printf("usage: [OPTION] read_file_list write_file_list\n");
+	printf("	-r read_thread_number	(default:%d)\n", DEFAULT_READ_THREAD_NUM);
+	printf("	-w write_thread_number	(default:%d)\n", DEFAULT_WRITE_THREAD_NUM);
+	printf("	-b block_size(KB)	(default:%d)\n", DEFAULT_BLOCK_SIZE);
+}
+
 struct options *parse_options(int argc, char *argv[])
 {
 	struct options *opts = NULL;
@@ -111,8 +122,9 @@ struct options *parse_options(int argc, char *argv[])
 		printf("Can not alloc mem.\n");
 		goto failed;
 	}
-	opts->read_num = 100;
-	opts->block_size = 32*1024;
+	opts->read_num = DEFAULT_READ_THREAD_NUM;
+	opts->write_num = DEFAULT_WRITE_THREAD_NUM;
+	opts->block_size = DEFAULT_BLOCK_SIZE*1024;
 
 	for (i=1; i<argc; i++) {
 		if (strcmp(argv[i], "-r") == 0) {
@@ -129,7 +141,7 @@ struct options *parse_options(int argc, char *argv[])
 			}
 			i++;
 			opts->write_num = atol(argv[i]);
-		} else if(strcmp(argv[i], "-b") == 0) {
+		} else if (strcmp(argv[i], "-b") == 0) {
 			if (i == argc-1) {
 				printf("missing args for -b\n");
 				goto failed;
@@ -150,6 +162,7 @@ struct options *parse_options(int argc, char *argv[])
 
 	return opts;
 failed:
+	print_help();
 	return NULL;
 }
 
@@ -225,7 +238,7 @@ out:
 }
 
 /************************************************************
- * For reader workers.
+ * For io workers.
  ***********************************************************/
 
 struct reader {
@@ -233,34 +246,33 @@ struct reader {
 	size_t 			 size;
 	char 			*buf;
 	unsigned int		count;
-//	struct random_data 	rdata;
 	unsigned int 		seed;
 };
 
-struct reader *init_reader(size_t size, unsigned int count, unsigned int seed, struct flist *flist)
+struct reader *init_io_worker(size_t size, unsigned int count, unsigned int seed, struct flist *flist)
 {
-	struct reader *reader = NULL;
+	struct reader *iow = NULL;
 
-	reader = calloc(1, sizeof(struct reader));
-	if (!reader) {
+	iow = calloc(1, sizeof(struct reader));
+	if (!iow) {
 		printf("Can not alloc mem for readers.\n");
 		goto failed;
 	}
 
-	reader->flist 	= flist;
-	reader->size 	= size;
-	reader->buf 	= calloc(1, size);
-	reader->count	= count;
-	if (!reader->buf) {
-		printf("Can not alloc buf for reader.\n");
+	iow->flist 	= flist;
+	iow->size 	= size;
+	iow->buf 	= calloc(1, size);
+	iow->count	= count;
+	if (!iow->buf) {
+		printf("Can not alloc buf for io worker.\n");
 		goto failed;
 	}
-	reader->seed = seed;
+	iow->seed = seed;
 
-	return reader;
+	return iow;
 failed:
-	if (reader)
-		free(reader);
+	if (iow)
+		free(iow);
 	return NULL;
 }
 
@@ -299,22 +311,22 @@ unsigned long long writer_counter = 0;;
 
 void *writer_routine(void *args)
 {
-	struct reader *reader = (struct reader *) args;
-	struct flist *flist = reader->flist;
-	int num, fd, ret, i;
+	struct reader *writer= (struct reader *) args;
+	struct flist *flist = writer->flist;
+	int num, fd, ret;
 
-//printf("start writer: begin=%lu,count=%lu\n", reader->seed, reader->count);
-//	for (i=0; i<reader->count; i++) {
+//printf("start writer: begin=%lu,count=%lu\n", writer->seed, writer->count);
+//	for (i=0; i<writer->count; i++) {
 	while (1) {
-		reader->seed+=1;
-		num = reader->seed % flist->count;
-		fd = open(flist->list[num], O_RDWR|O_CREAT, 644);
+		writer->seed+=1;
+		num = writer->seed % flist->count;
+		fd = open(flist->list[num], O_RDWR|O_CREAT, 00644);
 		if (fd < 0) {
 			printf("write open encounter %s %d(%s)\n",
 				flist->list[num], errno, strerror(errno));
 			continue;
 		}
-		ret = write(fd, reader->buf, reader->size);
+		ret = write(fd, writer->buf, writer->size);
 		if (ret < 0)
 			printf("write encounter %s %d(%s)\n",
 				flist->list[num], errno, strerror(errno));
@@ -355,8 +367,8 @@ int io_worker_generate(struct worker *worker, unsigned int worker_count, int siz
 			printf("Unkown ioworker!\n");
 			goto failed;
 		}
-		worker[i].wargs = init_reader(size, 0, rand_r(&seed), flist);
-//		worker[i].wargs = init_reader(size, (flist->count/worker_count), (flist->count/worker_count*i), flist);
+		worker[i].wargs = init_io_worker(size, 0, rand_r(&seed), flist);
+//		worker[i].wargs = init_io_worker(size, (flist->count/worker_count), (flist->count/worker_count*i), flist);
 		if (!worker[i].wargs) {
 			printf("Can not init reader\n");
 			goto failed;
@@ -427,60 +439,3 @@ int main(int argc, char *argv[])
 out:
 	return 0;
 }
-
-#if 0 //Currently no need to implement counter
-struct counter_args {
-	size_t block_size;
-	int thread_num;
-	struct reader *;
-};
-
-void *counter_worker(void *args)
-{
-	return NULL;
-}
-#endif
-
-#if 0 //Old test.
-int main (int argc, char *argv[])
-{
-	int fd;
-	int ret = 1;
-	int total_size = 0;
-	char *buf;
-	char *filepath;
-
-	buf = calloc(1, BUF_SIZE*2);
-	if (!buf) {
-		printf("can not alloc buf\n");
-		return -1;
-	}
-	buf = memalign(buf, BUF_SIZE);
-
-	if (argc < 2) {
-		printf("input file path\n");
-		return -1;
-	}
-	filepath = strdup(argv[1]);
-	fd = open(filepath, OPEN_MODE);
-	POSITIVE_OR_RETURN(fd, "can not open file");
-
-	while (ret > 0) {
-		memset(buf, '\0', BUF_SIZE);
-		ret = read (fd, buf, BUF_SIZE);
-		POSITIVE_OR_RETURN(ret, "can not write to file.");
-		if (ret == 0) {
-			printf("reach the end.\n");
-			break;
-		}
-		total_size += ret;
-		printf("read %d words:\n", ret);
-	}
-
-	printf("total size is %d\n", total_size);
-
-	close(fd);
-
-	return 0;
-}
-#endif

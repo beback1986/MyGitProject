@@ -20,6 +20,10 @@ struct _bwvmdio_aio;
 
 typedef struct _bwvmdio_device bwvmdio_device_t;
 typedef struct _bwvmdio_aio bwvmdio_aio_t;
+typedef struct _bwvmdio_device_list bwvmdio_device_list_t;
+typedef struct _bwvmdio_scsi_info bwvmdio_scsi_info_t;
+typedef struct _bwvmdio_device_id  bwvmdio_device_id_t;
+typedef struct _bwvmdio_device_info bwvmdio_device_info_t;
 
 #define BWVMDIO_SYNC	0
 #define BWVMDIO_ASYNC	1
@@ -58,19 +62,19 @@ int32_t bwvmdio_wait(bwvmdio_device_t *dev, bwvmdio_aio_t *aio, int64_t timeo);
 /*
  * Get device's scsi infomation, include cdb_length & sector_size.
  */
-int32_t bwvmdio_query_scsi_info(bwvmdio_device_t *dev, struct scsi_info *scsi_info);
+int32_t bwvmdio_query_scsi_info(bwvmdio_device_t *dev, bwvmdio_scsi_info_t *scsi_info);
 
 /*
  * Get device name, to identify unique deivce on this system.
  * On linux, means device file path. eg:/dev/sda
  * On windows, means harddisk name & physical drive name.
  */
-int32_t bwvmdio_query_device_id(bwvmdio_device_t *dev, struct device_id *dev_id);
+int32_t bwvmdio_query_device_id(bwvmdio_device_t *dev, bwvmdio_device_id_t *dev_id);
 
 /*
  * Get device's vendor id, product id & serial num.
  */
-int32_t bwvmdio_query_device_info(bwvmdio_device_t *dev, struct device_info *dev_info);
+int32_t bwvmdio_query_device_info(bwvmdio_device_t *dev, bwvmdio_device_info_t *dev_info);
 
 /*
  * Get all device connected to this system. Each device use type bwvmdio_device_entry

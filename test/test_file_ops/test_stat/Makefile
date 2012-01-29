@@ -1,2 +1,4 @@
+CFLAGS=-g -O0 -Wall
+
 default:
-	gcc -I../include test.c
+	gcc ${CFLAGS} -I../include test.c
