@@ -20,10 +20,23 @@ struct _bwvmdio_aio;
 
 typedef struct _bwvmdio_device bwvmdio_device_t;
 typedef struct _bwvmdio_aio bwvmdio_aio_t;
-typedef struct _bwvmdio_device_list bwvmdio_device_list_t;
-typedef struct _bwvmdio_scsi_info bwvmdio_scsi_info_t;
-typedef struct _bwvmdio_device_id  bwvmdio_device_id_t;
-typedef struct _bwvmdio_device_info bwvmdio_device_info_t;
+typedef struct bw_list_head bwvmdio_device_list_t;
+typedef struct _bwvmdio_scsi_info {
+	uint32_t sector_size;
+	uint64_t capacity;
+	unsigned char cdb_length;
+} bwvmdio_scsi_info_t;
+typedef struct _bwvmdio_device_id {
+	struct bw_list_head list;
+	uint64_t device_number;
+	char kernel_space_name[MAX_PATH];
+	char user_space_name[MAX_PATH];
+} bwvmdio_device_id_t;
+typedef struct _bwvmdio_device_info {
+	char vendor_id[32];
+	char product_id[32];
+	char serial_num[64];
+} bwvmdio_device_info_t;
 
 #define BWVMDIO_SYNC	0
 #define BWVMDIO_ASYNC	1
