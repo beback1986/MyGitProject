@@ -38,6 +38,11 @@ int main(int argc, char *argv[])
 	printf("uint64:%llu\n", u64);
 	printf("uint32:%lu\n", u32);
 
+	printf("sizeof int:		%d\n", sizeof(int));
+	printf("sizeof long int:	%d\n", sizeof(long int));
+	printf("sizeof long long int:	%d\n", sizeof(long long int));
+	printf("sizeof long:		%d\n", sizeof(long));
+	printf("sizeof long long:	%d\n", sizeof(long long));
 	printf("sizeof double:%d\n", sizeof(flt));
 	flt = u32*1000.0;
 	printf("double:%f int:%llu\n", flt, (u_int64_t)flt);

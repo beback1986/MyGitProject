@@ -12,7 +12,11 @@
 
 void sig_handler(int signum)
 {
-	printf("recieve msg:%d\n", signum);
+	struct timeval tv;
+	struct timezone	tz;
+
+	gettimeofday(&tv, &tz);
+	printf("recieve msg:%d, at:%d\n", signum, tv.tv_sec);
 }
 
 /**************************************************************
@@ -61,16 +65,27 @@ void test_timer_create(void)
 void test_setitimer(void)
 {
 	int ret;
-	struct itimerval tick;
+	struct itimerval tick1;
+	struct itimerval tick2;
 
-	tick.it_value.tv_sec = 3;
-	tick.it_value.tv_usec = 0;
-	tick.it_interval.tv_sec = 1;
-	tick.it_interval.tv_usec = 0;
+	tick1.it_value.tv_sec = 3;
+	tick1.it_value.tv_usec = 0;
+	tick1.it_interval.tv_sec = 3;
+	tick1.it_interval.tv_usec = 0;
 
+	tick2.it_value.tv_sec = 3;
+	tick2.it_value.tv_usec = 0;
+	tick2.it_interval.tv_sec = 5;
+	tick2.it_interval.tv_usec = 0;
 
 	signal(SIGALRM, sig_handler);
-	ret = setitimer(ITIMER_REAL, &tick, NULL);
+	ret = setitimer(ITIMER_REAL, &tick1, NULL);
+	if (ret) {
+		printf("set timer failed\n");
+		return;
+	}
+
+	ret = setitimer(ITIMER_REAL, &tick2, NULL);
 	if (ret) {
 		printf("set timer failed\n");
 		return;
@@ -97,8 +112,8 @@ void test_nanosleep()
 
 int main(int argc, char *argv[])
 {
-//	test_setitimer();
-	test_timer_create();
+	test_setitimer();
+//	test_timer_create();
 
 	return 0;
 }

@@ -12,7 +12,8 @@
 #include <inttypes.h>
 
 //#define OPEN_MODE (O_RDONLY|O_RDWR|O_CREAT|O_APPEND)
-#define OPEN_MODE (O_RDWR|O_CREAT|O_DIRECT)
+//#define OPEN_MODE (O_RDWR|O_CREAT|O_DIRECT)
+#define OPEN_MODE (O_RDWR|O_CREAT)
 
 #define BLOCK_SIZE (1024*1024*512)
 #define BLOCK_COUNT 1
