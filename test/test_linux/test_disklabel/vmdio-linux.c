@@ -48,7 +48,7 @@ failed:
 	return bwdev;
 }
 
-int32_t bwvmdio_close_dev(bwvmdio_device_t *dev)
+bwvmdio_error_t bwvmdio_close_dev(bwvmdio_device_t *dev)
 {
 	return close(dev->fd);
 }
@@ -92,13 +92,13 @@ failed:
 	return bwaio;
 }
 
-int32_t __bwvmdio_wait(struct aiocb64 *cb, const struct timespec *timeo)
+int32_t __bwvmdio_wait(const struct aiocb64 *cb, const struct timespec *timeo)
 {
 	aio_suspend64(&cb, 1, timeo);
 	return aio_error64(cb);
 }
 
-int32_t bwvmdio_read(bwvmdio_device_t *dev, uint64_t off, uint32_t len, char *buf, int32_t mode, bwvmdio_aio_t **paio)
+bwvmdio_error_t bwvmdio_read(bwvmdio_device_t *dev, uint64_t off, uint32_t len, char *buf, int32_t mode, bwvmdio_aio_t **paio)
 {
 	int32_t ret;
 	struct aiocb64 *cb;
@@ -127,7 +127,7 @@ failed:
 	return ret;
 }
 
-int32_t bwvmdio_wait(bwvmdio_device_t *dev, bwvmdio_aio_t *bwaio, int64_t timeo_sec)
+bwvmdio_error_t bwvmdio_wait(bwvmdio_device_t *dev, bwvmdio_aio_t *bwaio, int64_t timeo_sec)
 {
 	struct timespec timeo = {.tv_sec=timeo_sec,.tv_nsec=0};
 
