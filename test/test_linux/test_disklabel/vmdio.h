@@ -24,6 +24,8 @@ typedef struct _bwvmdio_device bwvmdio_device_t;
 struct _bwvmdio_aio; /* Platform provide. */
 typedef struct _bwvmdio_aio bwvmdio_aio_t;
 
+typedef void (*bw_vmdio_aio_callback_t)(bw_vmdio_error_t err, uint32_t len, void *args);
+
 typedef struct bw_list_head bwvmdio_device_list_t;	/* List head. */
 
 typedef struct _bwvmdio_device_id {
@@ -72,6 +74,11 @@ extern bwvmdio_device_t *bwvmdio_open_dev(const char *dev);
 extern bwvmdio_error_t bwvmdio_close_dev(bwvmdio_device_t *dev);
 
 /*
+ * Create bw_vmdio_aio_t.
+ */
+extern bw_vmdio_aio_t *bw_vmdio_aio_create(uint32_t mode, bw_vmdio_aio_callback_t callback, void *args);
+
+/*
  * Used in device io. Provide both sync & async mode.
  *  @dev: 	Device describtor.
  *  @offset:	Offset in device, where read begin.
@@ -81,7 +88,7 @@ extern bwvmdio_error_t bwvmdio_close_dev(bwvmdio_device_t *dev);
  *  @aio:	If mode is BWVMDIO_ASYNC, this filed should provide to
  *  		describe one aio.
  */
-extern bwvmdio_error_t bwvmdio_read(bwvmdio_device_t *dev, uint64_t offset, uint32_t length, char *buff, int32_t mode, bwvmdio_aio_t **aio);
+extern bwvmdio_error_t bwvmdio_read(bwvmdio_device_t *dev, uint64_t offset, uint32_t length, char *buff, bwvmdio_aio_t *aio);
 
 /*
  * Used to wait for aync io finish. This function only work if bwvmdio_read is
@@ -90,7 +97,7 @@ extern bwvmdio_error_t bwvmdio_read(bwvmdio_device_t *dev, uint64_t offset, uint
  *  @aio:	The describtor bwvmdio_read return.
  *  @timeo:	Wait time out, in nanoseconds. -1 means wait forever.
  */
-extern bwvmdio_error_t bwvmdio_wait(bwvmdio_device_t *dev, bwvmdio_aio_t *aio, int64_t timeo);
+extern bwvmdio_error_t bwvmdio_aio_wait(bwvmdio_device_t *dev, bwvmdio_aio_t *aio, int64_t timeo);
 
 /*
  * Get device's scsi infomation, include cdb_length & sector_size.

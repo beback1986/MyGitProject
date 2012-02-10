@@ -22,40 +22,58 @@ void sig_handler(int signum)
 /**************************************************************
  * for timer_create() related interfaces.
  **************************************************************/
+struct timer_struct {
+	int 			priv;
+	timer_t 		timer_id;
+	struct itimerspec 	tick;
+} g_ts = {.priv = 111};
+
 void timer_thread(sigval_t val)
 {
-	printf("thread run, val=%d\n", val.sival_int);
+	struct timer_struct *ts = val.sival_ptr;
+	printf("thread run, val=%d\n", ts->priv);
 	sleep(5);
 	printf("thread finished\n");
 }
 void test_timer_create(void)
 {
 	struct sigevent sige;
-	timer_t		timerid;
+	struct itimerspec tspec;
 	long		ret;
-	struct itimerspec tick;
+	int 		count = 0;
 
 	signal(SIGALRM, sig_handler);
 
-	sige.sigev_value.sival_int	= 111;
+	sige.sigev_value.sival_ptr	= &g_ts;
 	sige.sigev_signo		= SIGALRM;
 	sige.sigev_notify		= SIGEV_THREAD;
 	sige.sigev_notify_function	= timer_thread;
 	sige.sigev_notify_attributes	= NULL;
-	ret = timer_create(CLOCK_REALTIME, &sige, &timerid);
+	ret = timer_create(CLOCK_REALTIME, &sige, &g_ts.timer_id);
 	if (ret) {
 		printf("timer_create error:%d(%s)\n", errno, strerror(errno));
 		return ;
 	}
 
-	tick.it_value.tv_sec = 3;
-	tick.it_value.tv_nsec = 0;
-	tick.it_interval.tv_sec = 1;
-	tick.it_interval.tv_nsec = 0;
-	timer_settime(timerid, 0, &tick, NULL);
+	g_ts.tick.it_value.tv_sec = 0;
+	g_ts.tick.it_value.tv_nsec = 0;
+	g_ts.tick.it_interval.tv_sec = 0;
+	g_ts.tick.it_interval.tv_nsec = 0;
+	timer_settime(g_ts.timer_id, 0, &g_ts.tick, NULL);
 
 	while(1) {
-		pause();
+		timer_gettime(g_ts.timer_id, &tspec);
+		printf("still it_value=%d.%d it_interval=%d.%d seconds.\n",
+				tspec.it_value.tv_sec,
+				tspec.it_value.tv_nsec,
+				tspec.it_interval.tv_sec,
+				tspec.it_interval.tv_nsec);
+		if (tspec.it_value.tv_sec < 2 && count < 10) {
+			tspec.it_value.tv_sec = 4;
+			timer_settime(g_ts.timer_id, 0, &tspec, NULL);
+			count ++;
+		}
+		sleep(1);
 	}
 }
 
@@ -112,8 +130,8 @@ void test_nanosleep()
 
 int main(int argc, char *argv[])
 {
-	test_setitimer();
-//	test_timer_create();
+//	test_setitimer();
+	test_timer_create();
 
 	return 0;
 }
