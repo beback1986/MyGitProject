@@ -21,26 +21,33 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <stdio.h>
-#include <aio.h>
 #include <errno.h>
+#include <aio.h>
 
 #include "vmdio.h"
 
-#define __BWVMDIO_MAX_TIMEO 3
+#define __BW_VMDIO_MAX_TIMEO 3
 
-bwvmdio_device_t *bwvmdio_open_dev(const char *dev)
+bw_vmdio_device_t *bw_vmdio_open_dev(const char *dev)
 {
 	int fd;
-	bwvmdio_device_t *bwdev = NULL;
+	bw_vmdio_device_t *bwdev = NULL;
 
 	fd = open(dev, O_RDONLY);
-	if (fd == -1)
+	if (fd == -1) {
+		printf("BWVMDIO:Open device %s failed.%d(%s)\n", 
+				dev, errno, strerror(errno));
 		goto failed;
+	}
 
-	bwdev = calloc(1, sizeof(bwvmdio_device_t));
-	if (!bwdev)
+	bwdev = calloc(1, sizeof(bw_vmdio_device_t));
+	if (!bwdev) {
+		printf("BWVMDIO:Alloc mem for bw_vmdio_device_t failed.%d(%s)\n", 
+				errno, strerror(errno));
 		goto failed;
+	}
 
 	bwdev->fd = fd;
 
@@ -48,89 +55,163 @@ failed:
 	return bwdev;
 }
 
-bwvmdio_error_t bwvmdio_close_dev(bwvmdio_device_t *dev)
+bw_vmdio_error_t bw_vmdio_close_dev(bw_vmdio_device_t *dev)
 {
 	return close(dev->fd);
 }
 
-static inline void __bwvmdio_fill_aio(struct aiocb64 *cb, int fd, uint64_t off, uint32_t len, char *buf)
+static inline void __bw_vmdio_fill_sig(struct sigevent *sige, bw_vmdio_iomode_t mode,
+				void (*_func)(sigval_t), void *args)
+{
+	memset(sige, 0, sizeof(struct sigevent));
+	if (mode == BW_VMDIO_ASYNC_CALLBACK) {
+		sige->sigev_value.sival_ptr 	= args;
+//		sige->sigev_signo		= SIGALRM;
+		sige->sigev_notify 		= SIGEV_THREAD;
+		sige->sigev_notify_function	= _func;
+		sige->sigev_notify_attributes	= NULL;
+	} else {
+		sige->sigev_value.sival_int	= 123456;
+//		sige->sigev_signo		= SIGALRM;
+		sige->sigev_notify		= SIGEV_SIGNAL;
+	}
+}
+
+static inline void __bw_vmdio_fill_aio(struct aiocb64 *cb, int fd, uint64_t off, uint32_t len, char *buf)
 {
 	cb->aio_fildes 	= fd;
 	cb->aio_buf	= buf;
+	/* NOTE:Convert uint32_t to size_t(aio_nbytes). Be aware of here. */
 	cb->aio_nbytes	= len;
 	cb->aio_offset	= off;
 }
 
-static inline struct aiocb64 *__bwvmdio_get_aio(int fd, uint64_t off, uint32_t len, char *buf)
+bw_vmdio_error_t __bw_vmdio_wait(const struct aiocb64 *aiocb, const struct timespec *timeo)
 {
-	struct aiocb64 *cb;
+	int ret;
+	bw_vmdio_error_t bwerr = BW_VMDIO_SUCCESS;
 
-	cb = calloc(1, sizeof(struct aiocb64));
-	if (!cb) {
-		printf("Can not alloc mem for aiocb!\n");
-		goto failed;
-	}
-
-	__bwvmdio_fill_aio(cb, fd, off, len, buf);
-
-failed:
-	return cb;
-}
-
-static inline bwvmdio_aio_t *__bwvmdio_get_bwaio(struct aiocb64 *aio)
-{
-	bwvmdio_aio_t *bwaio = NULL;
-
-	bwaio = calloc(1, sizeof(bwvmdio_aio_t));
-	if (!bwaio) {
-		printf("Can not alloc mem for bwaio!\n");
-		goto failed;
-	}
-	bwaio->aiocb = aio;
-
-failed:
-	return bwaio;
-}
-
-int32_t __bwvmdio_wait(const struct aiocb64 *cb, const struct timespec *timeo)
-{
-	aio_suspend64(&cb, 1, timeo);
-	return aio_error64(cb);
-}
-
-bwvmdio_error_t bwvmdio_read(bwvmdio_device_t *dev, uint64_t off, uint32_t len, char *buf, int32_t mode, bwvmdio_aio_t **paio)
-{
-	int32_t ret;
-	struct aiocb64 *cb;
-
-	cb = __bwvmdio_get_aio(dev->fd, off, len, buf);
-
-	ret = aio_read64(cb);
+	aio_suspend64(&aiocb, 1, timeo);
+	ret = aio_error64(aiocb);
 	if (ret) {
-		printf("aio_read64 fail.\n");
+		printf("BW_VMDIO:wait error:%d(%s)", ret, strerror(ret));
+		bwerr = BW_VMDIO_ERROR_WAIT;
+	}
+
+	return bwerr;
+}
+
+void __bw_vmdio_gen_callback(sigval_t sigval)
+{
+	bw_vmdio_aio_t *aio = NULL;
+	bw_vmdio_error_t bwerr = BW_VMDIO_SUCCESS;
+	int ret;
+
+	aio = (bw_vmdio_aio_t*)sigval.sival_ptr;
+
+	ret = aio_error64(aio->aiocb);
+	if (ret) {
+		printf("BW_VMDIO: aio error:%d(%s)", ret, strerror(ret));
+		bwerr = BW_VMDIO_ERROR_AIO;
+	}
+	/* NOTE:Convert size_t(aio_nbytes) to uint32_t. Be aware of here. */
+	aio->callback(bwerr, aio->aiocb->aio_nbytes, aio->args);
+
+	return ;
+}
+
+bw_vmdio_aio_t *bw_vmdio_aio_create(bw_vmdio_iomode_t mode, 
+				bw_vmdio_aio_callback_t callback, void *args)
+{
+	bw_vmdio_aio_t *aio = NULL;
+	struct aiocb64 *aiocb = NULL;
+
+	aio = calloc(1, sizeof(bw_vmdio_aio_t));
+	aiocb = calloc(1, sizeof(struct aiocb64));
+	if (!aio || !aiocb) {
+		printf("BW_VMDIO:Can not alloc mem for aio or aiocb\n");
 		goto failed;
 	}
 
-	if (mode == BWVMDIO_ASYNC) {
-		if (!paio) {
-			ret = EINVAL;
-			printf("provide paio parameter in BWVMDIO_ASYNC mode\n");
+	aio->mode 	= mode;
+	aio->aiocb 	= aiocb;
+	aio->callback 	= callback;
+	aio->args 	= args;
+
+	__bw_vmdio_fill_sig(&aiocb->aio_sigevent, mode, __bw_vmdio_gen_callback, aio);
+
+	return aio;
+failed:
+	if (aio)
+		free(aio);
+	if (aiocb)
+		free(aiocb);
+	return NULL;
+}
+
+void bw_vmdio_aio_delete(bw_vmdio_aio_t *aio)
+{
+	if (aio) {
+		if (aio->aiocb)
+			free(aio->aiocb);
+		free(aio);
+	}
+}
+
+bw_vmdio_error_t bw_vmdio_read(bw_vmdio_device_t *dev, uint64_t off, uint32_t len, 
+				char *buf, bw_vmdio_aio_t *aio)
+{
+	bw_vmdio_error_t bwerr = BW_VMDIO_SUCCESS;
+	struct aiocb64 *aiocb;
+	bw_vmdio_iomode_t mode;
+	struct timespec timeo = {.tv_sec=__BW_VMDIO_MAX_TIMEO,.tv_nsec=0};
+
+	/* If aio==NULL, we create a tmp aiocb to use. */
+	if (aio == NULL) {
+		mode = BW_VMDIO_SYNC;
+		aiocb = calloc(1, sizeof(struct aiocb64));
+		if (!aiocb) {
+			printf("BW_VMDIO:Can not alloc mem for aiocb\n");
+			bwerr = BW_VMDIO_ERROR_NOMEM;
 			goto failed;
 		}
-		(*paio) = __bwvmdio_get_bwaio(cb);
-	} else { /* Consider other mode to be BWVMDIO_SYNC. */
-		struct timespec timeo = {.tv_sec=__BWVMDIO_MAX_TIMEO,.tv_nsec=0};
-		ret = __bwvmdio_wait(cb, &timeo);
+		__bw_vmdio_fill_sig(&aiocb->aio_sigevent, BW_VMDIO_SYNC, NULL, NULL);
+	} else {
+		mode  = aio->mode;
+		aiocb = aio->aiocb;
 	}
 
+	__bw_vmdio_fill_aio(aiocb, dev->fd, off, len, buf);
+	if (aio_read64(aiocb)) {
+		printf("BW_VMDIO:aio_read64 fail.%d(%s)\n", errno, strerror(errno));
+		bwerr = BW_VMDIO_ERROR_READ;
+		goto failed;
+	}
+
+	switch (mode) {
+	case BW_VMDIO_SYNC:
+		bwerr = __bw_vmdio_wait(aiocb, &timeo);
+		free(aiocb);
+		break;
+	case BW_VMDIO_ASYNC_WAIT:
+	case BW_VMDIO_ASYNC_CALLBACK:
+		break;
+	default:
+		printf("BW_VMDIO:Unkown io mode %d\n", mode);
+		bwerr = BW_VMDIO_ERROR_INVAL;
+	};
+
 failed:
-	return ret;
+	return bwerr;
 }
 
-bwvmdio_error_t bwvmdio_wait(bwvmdio_device_t *dev, bwvmdio_aio_t *bwaio, int64_t timeo_sec)
+bw_vmdio_error_t bw_vmdio_aio_wait(bw_vmdio_device_t *dev, bw_vmdio_aio_t *aio, 
+				struct timeval *timeo)
 {
-	struct timespec timeo = {.tv_sec=timeo_sec,.tv_nsec=0};
+	struct timespec ts = {
+		.tv_sec		= timeo->tv_sec,
+		.tv_nsec	= (timeo->tv_usec * 1000),
+	};
 
-	printf("begin to wait\n");
-	return __bwvmdio_wait(bwaio->aiocb, &timeo);
+	return __bw_vmdio_wait(aio->aiocb, &ts);
 }

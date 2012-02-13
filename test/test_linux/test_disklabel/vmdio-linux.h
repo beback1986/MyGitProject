@@ -18,14 +18,17 @@
 
 #ifndef __VMDIO_LINUX_H__
 
-struct _bwvmdio_device {
+struct _bw_vmdio_device {
 	int fd;
 	char *dev_path;
 	char *dev_name;//This field is the last segmant of dev_path.
 };
 
-struct _bwvmdio_aio {
-	struct aiocb64	*aiocb;
+struct _bw_vmdio_aio {
+	struct aiocb64			*aiocb;
+	bw_vmdio_iomode_t 		mode;
+	bw_vmdio_aio_callback_t  	callback;
+	void 				*args;
 };
 
 #endif /* __VMDIO_LINUX_H__ */

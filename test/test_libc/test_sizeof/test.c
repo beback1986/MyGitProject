@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -27,10 +28,13 @@ int main(int argc, char *argv[])
 	u_int32_t u32 = 0;
 	double    flt = 0;
 	struct timeval tv;
+	struct timespec ts;
 	u_int64_t tio = 0;
 	u_int64_t tin = 0;
 	u_int32_t tiv = 0;
 	float     spd = 0;
+	size_t    sizet  = 0xbcdef012;
+	uint64_t  size64 = sizet;
 
 	u64 = ~u64;
 	u32 = ~u32;
@@ -52,8 +56,14 @@ int main(int argc, char *argv[])
 	printf("sizeof unsigned long:%d\n", sizeof(unsigned long));
 	printf("sizeof uint64_t:%d\n", sizeof(u_int64_t));
 
+	printf("sizeof size_t:%d\n", sizeof(size_t));
+	printf("sizeof ssize_t:%d\n", sizeof(ssize_t));
+	printf("before type convert:%lx, after type convert:%llx\n", sizet, size64);
+
 	printf("sizeof tv.tv_sec:%d\n", sizeof(tv.tv_sec));
 	printf("sizeof tv.tv_usec:%d\n", sizeof(tv.tv_usec));
+	printf("sizeof ts.tv_sec:%d\n", sizeof(ts.tv_sec));
+	printf("sizeof ts.tv_nsec:%d\n", sizeof(ts.tv_nsec));
 	gettimeofday(&tv, NULL);
 	printf("old time sec:%d, usec:%d\n", tv.tv_sec, tv.tv_usec);
 	tio = (u_int64_t)tv.tv_sec*1000000+(u_int64_t)tv.tv_usec;

@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "vmdio.h"
 
@@ -49,35 +50,127 @@ void show_result(char *buf, int size)
 	}
 }
 
-void test_libvmdio(void)
+void async_callback(bw_vmdio_error_t err, uint32_t len, void *args)
 {
-	int ret;
-	char *buf;
-	bwvmdio_device_t *bwdev;
-	bwvmdio_aio_t *bwaio;
+	char *buf = args;
+
+	printf("test_callback:err=%d,len=%u,pid=%lu\n", err, len, pthread_self());
+
+	show_result(buf, 512);
+
+	return ;
+}
+
+void test_libvmdio_sync(void)
+{
+	bw_vmdio_device_t *bwdev = NULL;
+	bw_vmdio_aio_t    *bwaio = NULL;
+	bw_vmdio_error_t   bwerr;
+	char              *buf;
 
 	buf = calloc(1, BUFSIZE);
 
-	bwdev = bwvmdio_open_dev("/dev/sda");
+	bwdev = bw_vmdio_open_dev("/dev/sda");
 	if (!bwdev) {
-		printf("bwvmdio_open_dev failed.\n");
+		printf("bw_vmdio_open_dev failed.\n");
 		goto out;
 	}
 
-	ret = bwvmdio_read(bwdev, 4096000, BUFSIZE, buf, BWVMDIO_ASYNC, &bwaio);
-	if (ret) {
-		printf("read fail.%d\n", ret);
+	bwaio = bw_vmdio_aio_create(BW_VMDIO_SYNC, NULL, NULL);
+	if (!bwaio) {
+		printf("create bw_vmdio_aio_t failed.\n");
 		goto out;
 	}
 
-	ret = bwvmdio_wait(bwdev, bwaio, 100);
-	if (ret) {
-		printf("wait fail.%d\n", ret);
+	printf("begin to read.pid=%lu\n", pthread_self());
+	bwerr = bw_vmdio_read(bwdev, 4096000, BUFSIZE, buf, bwaio);
+	if (bwerr) {
+		printf("read fail.%d\n", bwerr);
+		goto out;
+	}
+
+	show_result(buf, 512);
+
+out:
+	bw_vmdio_aio_delete(bwaio);
+	return ;
+}
+
+void test_libvmdio_async_callback(void)
+{
+	bw_vmdio_device_t *bwdev = NULL;
+	bw_vmdio_aio_t    *bwaio = NULL;
+	bw_vmdio_error_t   bwerr;
+	char              *buf;
+
+	buf = calloc(1, BUFSIZE);
+
+	bwdev = bw_vmdio_open_dev("/dev/sda");
+	if (!bwdev) {
+		printf("bw_vmdio_open_dev failed.\n");
+		goto out;
+	}
+
+	bwaio = bw_vmdio_aio_create(BW_VMDIO_ASYNC_CALLBACK, async_callback, buf);
+	if (!bwaio) {
+		printf("create bw_vmdio_aio_t failed.\n");
+		goto out;
+	}
+
+	printf("begin to read.pid=%lu\n", pthread_self());
+	bwerr = bw_vmdio_read(bwdev, 4096000, BUFSIZE, buf, bwaio);
+	if (bwerr) {
+		printf("read fail.%d\n", bwerr);
+		goto out;
+	}
+
+	while (1)
+		sleep(1);
+
+out:
+	bw_vmdio_aio_delete(bwaio);
+	return ;
+}
+
+void test_libvmdio_async_wait(void)
+{
+	char 		  *buf;
+	bw_vmdio_device_t *bwdev = NULL;
+	bw_vmdio_aio_t 	  *bwaio = NULL;
+	bw_vmdio_error_t   bwerr;
+	struct timeval	   ts = {.tv_sec=10, .tv_usec=0,};
+
+	buf = calloc(1, BUFSIZE);
+
+	bwdev = bw_vmdio_open_dev("/dev/sda");
+	if (!bwdev) {
+		printf("bw_vmdio_open_dev failed.\n");
+		goto out;
+	}
+
+	bwaio = bw_vmdio_aio_create(BW_VMDIO_ASYNC_WAIT, NULL, NULL);
+	if (!bwaio) {
+		printf("create bw_vmdio_aio_t failed.\n");
+		goto out;
+	}
+
+	printf("begin to read\n");
+	bwerr = bw_vmdio_read(bwdev, 4096000, BUFSIZE, buf, bwaio);
+	if (bwerr) {
+		printf("read fail.%d\n", bwerr);
+		goto out;
+	}
+
+	printf("begin to wait.pid=%lu\n", pthread_self());
+	bwerr = bw_vmdio_aio_wait(bwdev, bwaio, &ts);
+	if (bwerr) {
+		printf("wait fail.%d\n", bwerr);
 		goto out;
 	}
 	show_result(buf, 512);
 
 out:
+	bw_vmdio_aio_delete(bwaio);
 	return ;
 }
 
@@ -101,6 +194,8 @@ int main(int argc, char *argv[])
 	printf("return ret=%d\n", ret);
 #endif
 
-	test_libvmdio();
+	test_libvmdio_sync();
+	test_libvmdio_async_wait();
+	test_libvmdio_async_callback();
 	return 0;
 }
