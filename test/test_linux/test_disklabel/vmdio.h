@@ -2,12 +2,20 @@
  * Volume Metadata I/O Library
  */
 
-#ifndef VMDIO_H
-#define VMDIO_H
+#ifndef __BW_VMDIO_H__
+#define __BW_VMDIO_H__
 
-/* For system independent type. */
+/* For struct timeval. */
+#if defined BWOSL_LIN_USER
+#include <time.h>
 #include <stdint.h>
+#elif defined BWOSL_WIN_USER
+#else
+#error "Unsupported platform!"
+#endif
 
+
+//#include "types.h"
 #include "list.h"
 
 typedef enum _bw_vmdio_error {
@@ -35,10 +43,12 @@ typedef enum _bw_vmdio_iomode {
 /* ASYNC_CALLBACK mode function type. */
 typedef void (*bw_vmdio_aio_callback_t)(bw_vmdio_error_t err, uint32_t len, void *args);
 
-#ifdef VMDIO_LINUX
+#if defined BWOSL_LIN_USER
 #include "vmdio-linux.h"
-#else
+#elif defined BWOSL_WIN_USER
 #include "vmdio-windows.h"
+#else
+#error "Unsupported platform!"
 #endif
 
 /* These two structure should be provided in vmdio-{platform}.h */
@@ -93,12 +103,11 @@ extern void bw_vmdio_aio_delete(bw_vmdio_aio_t *aio);
 /*
  * Used in device io. Provide both sync & async mode.
  *  @dev: 	Device describtor.
- *  @offset:	Offset in device, where read begin.
- *  @length:	Read length.
- *  @buff:	Read buffer. Invoker provide buffer.
- *  @mode:	Work mode. In ether BW_VMDIO_SYNC or BW_VMDIO_ASYNC.
- *  @aio:	If mode is BW_VMDIO_ASYNC, this filed should provide to
- *  		describe one aio.
+ *  @off:	Offset in device, where read begin.
+ *  @len:	Read length.
+ *  @buf:	Read buffer. Invoker provide buffer.
+ *  @aio:	Use bw_vmdio_aio_create to create aio. 
+ *  		If aio is NULL, SYNC mode is supposed.
  */
 extern bw_vmdio_error_t bw_vmdio_read(bw_vmdio_device_t *dev, uint64_t off, uint32_t len, char *buf, bw_vmdio_aio_t *aio);
 
@@ -107,7 +116,7 @@ extern bw_vmdio_error_t bw_vmdio_read(bw_vmdio_device_t *dev, uint64_t off, uint
  * work in BW_VMDIO_ASYNC mode.
  *  @dev: 	Device describtor.
  *  @aio:	The describtor bw_vmdio_read return.
- *  @timeo:	Wait time out, in nanoseconds. -1 means wait forever.
+ *  @timeo:	NULL means wait forever. If not NULL, given time will be wait before IO is done.
  */
 extern bw_vmdio_error_t bw_vmdio_aio_wait(bw_vmdio_device_t *dev, bw_vmdio_aio_t *aio, struct timeval *timeo);
 
@@ -118,7 +127,7 @@ extern bw_vmdio_error_t bw_vmdio_query_scsi_info(bw_vmdio_device_t *dev, bw_vmdi
 
 /*
  * Get device name, to identify unique deivce on this system.
- * On linux, means device file path. eg:/dev/sda
+ * On linux, means device name. eg:sda
  * On windows, means harddisk name & physical drive name.
  */
 extern bw_vmdio_error_t bw_vmdio_query_device_id(bw_vmdio_device_t *dev, bw_vmdio_device_id_t *dev_id);
@@ -139,4 +148,4 @@ extern bw_vmdio_error_t bw_vmdio_query_device_list(bw_vmdio_device_list_t *head)
  */
 extern void bw_vmdio_free_device_list(bw_vmdio_device_list_t *head);
 
-#endif	/* VMDIO_H */
+#endif	/* __BW_VMDIO_H__ */

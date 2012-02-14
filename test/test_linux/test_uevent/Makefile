@@ -1,4 +1,9 @@
-CFLAGS=-Wall
+CFLAGS=-g -O0 -Wall
 
-all:
-	gcc ${CFLAGS} test.c
+LD_FLAGS=-lpthread
+
+all: dev_event.o test.o
+	gcc ${CFLAGS} ${LD_FLAGS} test.o dev_event.o
+
+clean:
+	rm dev_event.o test.o a.out -f

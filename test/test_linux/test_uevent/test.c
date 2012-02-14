@@ -8,8 +8,11 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
+#include "dev_event.h"
+
 #define BUFFER_SIZE 4096
 
+#if 0
 int common_netlink_init(int *sock, struct sockaddr_nl **nl_saddr, int nl)
 {
 	int ret = -1;
@@ -29,12 +32,11 @@ int common_netlink_init(int *sock, struct sockaddr_nl **nl_saddr, int nl)
 		goto failed;
 	}
 
-	struct sockaddr_nl *saddr = (struct sockaddr_nl *)malloc(sizeof(struct sockaddr_nl));
+	struct sockaddr_nl *saddr = (struct sockaddr_nl *)calloc(1, sizeof(struct sockaddr_nl));
 	if (!saddr){
 		printf("alloc mem fail\n");
 		goto failed;
 	}	
-	memset(saddr, 0, sizeof(struct sockaddr_nl));
 
 	saddr->nl_family = AF_NETLINK;
 	saddr->nl_pid = getpid();
@@ -57,27 +59,27 @@ failed:
 	return ret;
 }
 
-char buff[BUFFER_SIZE];
+#endif
+
+int32_t bwlc_handle_dev_msg(bwlc_devent_msg_t *devent)
+{
+	printf("recieve msg:type=%d,devpath=%s\n", devent->event_type, devent->dev_path);
+	return 0;
+}
 
 int main(int argc, char *argv[])
 {
-	int ret;
-	int udev_fd = 0;
-	struct sockaddr_nl *udev_addr;
+	int32_t ret;
 
-        ret = common_netlink_init(&udev_fd, &udev_addr, NETLINK_KOBJECT_UEVENT);
-        if (ret) {
-		printf("main: netlink_init for udev failed.%d(%s)", errno, strerror(errno));
+	ret = bwlc_uevent_init(BWLC_SCAN_NORMAL);
+	if (ret) {
+		printf("init bwlc_event failed.\n");
 		goto failed;
 	}
 
-	while (1) {
-		memset(buff, '\0', BUFFER_SIZE);
-		ret = recv(udev_fd, buff, BUFFER_SIZE, 0);
-		printf("recieve:%s\n", buff);
-	}
+	while (1)
+		sleep(1);
 
-	return 0;
 failed:
-	return -1;
+	return 0;
 }
