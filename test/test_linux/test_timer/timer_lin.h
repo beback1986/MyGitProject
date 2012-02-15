@@ -24,21 +24,28 @@
 #error "Include timer.h instead!"
 #endif
 
+#include <signal.h>
+
 #include "list.h"
 
 struct _bw_timer_queue {
 	struct bw_list_head tmq_list;
+	struct sigevent     tmq_sige;
+	timer_t	            tmq_id;
+	struct itimerspec   tmq_timeo;
+	int                 tmq_count;
 };
 
 struct _bw_timer_timer {
 	struct bw_list_head tm_node;
 	bw_timer_handler_t  tm_handler;
+	void               *tm_args;
 	/* Time before first time out. */
 	struct timeval      tm_begin;
 	/* Time out tick. */
 	struct timeval      tm_tick;
 	/* Next time out. */
-	struct timeval      tm_next_timeo;
+	struct timeval      tm_timeo;
 };
 
 #endif /* __BW_TIMER_LIN_H__ */

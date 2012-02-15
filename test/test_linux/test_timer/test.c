@@ -10,6 +10,8 @@
 #include <string.h>
 #include <sys/time.h>
 
+#include "timer.h"
+
 void sig_handler(int signum)
 {
 	struct timeval tv;
@@ -114,24 +116,92 @@ void test_setitimer(void)
 	}
 }
 
-/**************************************************************
- * for alarm() related interfaces.
- **************************************************************/
-void test_alarm()
+struct timeval tm1_last;
+struct timeval tm2_last;
+struct timeval tm3_last;
+
+int32_t tm1_handler(void *args)
 {
+	struct timeval tm_now;
+
+	gettimeofday(&tm_now, NULL);
+	printf("tm1:interval=%u.%u\n",
+			tm_now.tv_sec-tm1_last.tv_sec, tm_now.tv_usec-tm1_last.tv_usec);
+	tm1_last = tm_now;
+
+	return 0;
 }
 
-/**************************************************************
- * for nanosleep() related interfaces.
- **************************************************************/
-void test_nanosleep()
+int32_t tm2_handler(void *args)
 {
+	struct timeval tm_now;
+
+	gettimeofday(&tm_now, NULL);
+	printf("tm2:interval=%u.%u\n",
+			tm_now.tv_sec-tm2_last.tv_sec, tm_now.tv_usec-tm2_last.tv_usec);
+	tm2_last = tm_now;
+
+	return 0;
+}
+
+int32_t tm3_handler(void *args)
+{
+	struct timeval tm_now;
+
+	gettimeofday(&tm_now, NULL);
+	printf("tm3:interval=%u.%u\n",
+			tm_now.tv_sec-tm3_last.tv_sec, tm_now.tv_usec-tm3_last.tv_usec);
+	tm3_last = tm_now;
+
+	return 0;
 }
 
 int main(int argc, char *argv[])
 {
 //	test_setitimer();
-	test_timer_create();
+//	test_timer_create();
+	struct timeval tm1_begin = {.tv_sec=5, .tv_usec=0,},
+		       tm1_tick  = {.tv_sec=1, .tv_usec=0,},
+		       tm2_begin = {.tv_sec=4, .tv_usec=0,},
+		       tm2_tick  = {.tv_sec=2, .tv_usec=0,},
+		       tm3_begin = {.tv_sec=6, .tv_usec=0,},
+		       tm3_tick  = {.tv_sec=3, .tv_usec=0,};
 
+	char *args = "hello";
+	int ret1, ret2, ret3;
+	bw_timer_queue_t *queue;
+	bw_timer_timer_t *tm1, *tm2, *tm3;
+
+	queue = bw_timer_create_queue();
+	if (!queue) {
+		printf("Create timer queue failed.\n");
+		goto out;
+	}
+
+	tm1 = bw_timer_create_timer(tm1_begin, tm1_tick, tm1_handler, args);
+	tm2 = bw_timer_create_timer(tm2_begin, tm2_tick, tm2_handler, args);
+	tm3 = bw_timer_create_timer(tm3_begin, tm3_tick, tm3_handler, args);
+	if (!tm1 || !tm2 || !tm3) {
+		printf("Create timer 2 failed.\n");
+		goto out;
+	}
+
+	gettimeofday(&tm1_last, NULL);
+	ret1 = bw_timer_queue_timer(queue, tm1);
+
+	gettimeofday(&tm2_last, NULL);
+	ret2 = bw_timer_queue_timer(queue, tm2);
+
+	gettimeofday(&tm3_last, NULL);
+	ret3 = bw_timer_queue_timer(queue, tm3);
+	if (ret1 || ret2 || ret3) {
+		printf("Queue timer failed.\n");
+		goto out;
+	}
+
+	while (1)
+		sleep(1);
+
+out:
 	return 0;
 }

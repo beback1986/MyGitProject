@@ -19,7 +19,10 @@
 #ifndef __BW_TIMER_H__
 #define __BW_TIMER_H__
 
+/* NOTE:TO BE REMOVE */
 #define BWOSL_LIN_USER
+#include <stdint.h>
+
 
 /* For struct timeval. */
 #if defined BWOSL_LIN_USER
@@ -48,7 +51,7 @@ typedef struct _bw_timer_timer bw_timer_timer_t;
 extern bw_timer_queue_t *bw_timer_create_queue(void);
 
 extern bw_timer_timer_t *bw_timer_create_timer(struct timeval tv_begin, 
-				struct timeval tv_tick, bw_timer_handler_t handler);
+		struct timeval tv_tick, bw_timer_handler_t handler, void *args);
 
 extern int32_t bw_timer_queue_timer(bw_timer_queue_t *queue, bw_timer_timer_t *timer);
 
