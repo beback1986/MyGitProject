@@ -1,0 +1,3 @@
+#!/bin/bash
+svn status | grep ^? | awk '{print $2}' | xargs rm -rf
+svn status --no-ignore | grep ^I | awk '{print $2}' | xargs rm -rf

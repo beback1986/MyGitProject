@@ -1,0 +1,6 @@
+#!/bin/bash
+rm cscope.* -f
+find -L . -name "*.h" -o -name "*.c" -o -name "*.cpp" > cscope.files
+#find . -name "*.h" -o -name "*.c" -o -name "*.cpp" > cscope.files
+cscope -bkq -i cscope.files
+ctags -R
