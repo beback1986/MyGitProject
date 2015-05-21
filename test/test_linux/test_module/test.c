@@ -4,6 +4,9 @@
 
 static int hello_init(void)
 {
+	uint64_t a = 1048576;
+	uint32_t b = 4096;
+
 	void (* func_p)(void);
 /*	unsigned int cpu = get_cpu();
 	struct module *mod;
@@ -22,6 +25,7 @@ static int hello_init(void)
 		func_p();
 		printk("symbol exist. p=%p\n", func_p);
 	}
+	printk("a/b = %u.\n", a/b);
 	return 0;
 }
 

@@ -1,36 +1,32 @@
+#include <stdlib.h>
 #include <stdio.h>
 
-void func1()
+void set_pp(int **pp1, int **pp2)
 {
+	*pp1 = *pp2;
 }
-void func2()
+
+void func(int **pp)
 {
-	int register i = 0;
-	int j = 0;
-//	int k = 0;
-//	int l = 0;
-//	int m = 0;
-	j++;
-	i=j;
-//	k--;
-}
-void func3(int i, int j)
-{
-	int k;
-	i++;
-	j++;
-	k++;
+	int *p = *pp;
+
+	printf("p=%p\n", p);
+
+	p++;
 }
 
 int main(int argc, char* argv[])
 {
-	int j=0,k=0,l=0;
-	int register i=0;
-	func1();
-	func2();
-	func3(i,j);
-//	printf("hello");
-//	int i=0;
-//	i ++;
-//	return 0;
+	int *p = NULL;
+	int i;
+
+	p = calloc(10, sizeof(int));
+	printf("p=%p address of p %p\n", p, &p);
+	func(&p);
+	printf("p=%p address of p %p\n", p, &p);
+
+	for (i = 0; i != 1; i++)
+		printf("i=%d\n", i);
+
+	return 0;
 }

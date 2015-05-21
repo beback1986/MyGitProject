@@ -3,8 +3,8 @@
  * Support all platform.
  */
 
-#ifndef __DEV_EVENT_H_
-#define __DEV_EVENT_H_
+#ifndef __UEVENT_H_
+#define __UEVENT_H_
 
 /*
  * These should move to bwlblchk.h
@@ -33,4 +33,4 @@ typedef enum _bwlc_scan_set {
 extern int32_t bwlc_uevent_init(bwlc_scan_set_t scan_set);
 
 
-#endif /* __DEV_EVENT_H_ */
+#endif /* __UEVENT_H_ */

@@ -8,7 +8,7 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
-#include "dev_event.h"
+#include "uevent.h"
 
 #define BUFFER_SIZE 4096
 

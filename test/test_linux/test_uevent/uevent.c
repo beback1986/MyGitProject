@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "dev_event.h"
+#include "uevent.h"
 
 #define BWLC_UEVENT_BUFSIZE 4096
 

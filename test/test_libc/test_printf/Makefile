@@ -1,3 +1,3 @@
 
 default:
-	gcc test.c
+	gcc -g -O0 -Wall test.c

@@ -291,5 +291,11 @@ int32_t bw_timer_queue_timer(bw_timer_queue_t *queue, bw_timer_timer_t *timer)
 
 int32_t bw_timer_unqueue_timer(bw_timer_queue_t *queue, bw_timer_timer_t *timer)
 {
+	int ret;
+
+	__bw_timer_queue_delete(queue, timer);
+	ret = __bw_timer_queue_update_timeo(queue);
+	if (ret)
+		printf("BWTIMER: queue timer update timeo failed, ignore\n");
 	return 0;
 }

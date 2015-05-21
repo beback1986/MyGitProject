@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 		       tm3_tick  = {.tv_sec=3, .tv_usec=0,};
 
 	char *args = "hello";
-	int ret1, ret2, ret3;
+	int ret1, ret2, ret3, i;
 	bw_timer_queue_t *queue;
 	bw_timer_timer_t *tm1, *tm2, *tm3;
 
@@ -196,6 +196,17 @@ int main(int argc, char *argv[])
 	ret3 = bw_timer_queue_timer(queue, tm3);
 	if (ret1 || ret2 || ret3) {
 		printf("Queue timer failed.\n");
+		goto out;
+	}
+
+	for (i=0; i<10; i++)
+		sleep(1);
+
+	ret1 = bw_timer_unqueue_timer(queue, tm1);
+	ret2 = bw_timer_unqueue_timer(queue, tm2);
+	ret3 = bw_timer_unqueue_timer(queue, tm3);
+	if (ret1 || ret2 || ret3) {
+		printf("Unqueue timer failed.\n");
 		goto out;
 	}
 

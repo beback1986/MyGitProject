@@ -1,5 +1,28 @@
 #include <string.h>
+#include <stdint.h>
 #include <stdio.h>
+
+
+static const char *bwlc_scan_keyword[][3] = { 
+        {"sd", "ssd", "hd"}, /* For BWLC_SCAN_NORMAL. */
+        {"md", "dm"}, /* For BWLC_SCAN_MULTIPATH. */
+};
+
+void test_string_array(void)
+{
+	int i, j;
+
+	for (i=0; i<2; i++) {
+		for (j=0; j<3; j++) {
+			if (bwlc_scan_keyword[i][j] != NULL)
+				printf("%s\t", bwlc_scan_keyword[i][j]);
+		}
+		printf("\n");
+	}
+	printf("%llu\n", (uint64_t)-1);
+
+	return ;
+}
 
 int main(int argc, char *argv[])
 {
@@ -26,6 +49,8 @@ int main(int argc, char *argv[])
 	if (first != last)
 		goto out;
 	printf("find device:%s\n", last+1);
+
+	test_string_array();
 
 out:
 	return 0;

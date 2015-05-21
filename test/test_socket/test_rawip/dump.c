@@ -26,8 +26,8 @@ void
 tcphdr_dump(struct tcphdr *tcph)
 {
 	printf("tcphdr dump\n");
-	printf("source:%x\n", tcph->source);
-	printf("dest:%x\n", tcph->dest);
+	printf("source:%u\n", ntohs(tcph->source));
+	printf("dest:%u\n", ntohs(tcph->dest));
 	printf("seq:%u\n", tcph->seq);
 	printf("ack_seq:%u\n", tcph->ack_seq);
 	printf("doff:%u\n", tcph->doff);

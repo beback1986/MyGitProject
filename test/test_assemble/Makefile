@@ -1,3 +1,7 @@
+
+all:
+	gcc -Wall test.c
+
 print: clean_print
 	gcc -g -c print.s -o print.o
 	ld print.o -o print
@@ -13,7 +17,3 @@ hello: clean_hello
 clean_hello:
 	rm -f hello.o
 	rm -f hello
-
-all:
-	echo "no target"
-

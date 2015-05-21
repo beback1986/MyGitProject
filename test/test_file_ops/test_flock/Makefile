@@ -1,3 +1,3 @@
 CFLAGS=-Wall
 all:
-	gcc $(CFLAGS) test.c
+	gcc $(CFLAGS) -lpthread test.c
