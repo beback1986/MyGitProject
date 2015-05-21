@@ -11,12 +11,9 @@
 #include <unistd.h>
 #include <inttypes.h>
 
-//#define OPEN_MODE (O_RDONLY|O_RDWR|O_CREAT|O_APPEND)
-#define OPEN_MODE (O_RDONLY)
 //#define OPEN_MODE (O_RDWR|O_CREAT)
-
-#define BLOCK_SIZE (1024*1024*512)
-#define BLOCK_COUNT 1
+//#define OPEN_MODE (O_RDONLY)
+#define OPEN_MODE (O_RDWR|O_CREAT|O_DIRECT)
 
 #define WORD_SIZE 512
 #define WORD_COUNT 0
@@ -26,6 +23,7 @@ struct options {
 	int 		 mode;
 	uint32_t 	 block_size;
 	int 		 block_count;
+	uint32_t	 file_pos;
 	char 		*filepath;
 };
 struct options g_opts;
@@ -61,6 +59,7 @@ void *routine(void *arg)
 	}
 	buf = (char *)memalign((void *)buf, opts->block_size);
 	memset(buf, 'a', opts->block_size);
+	lseek(fd, opts->file_pos, SEEK_SET);
 	for (i=0; i<opts->block_count; i++){
 		ret = write(fd, buf, opts->block_size);
 		if (ret < 0) {
@@ -143,6 +142,7 @@ int parse_args(int argc, char *argv[], struct options *opts)
 	/* default optsion */
 	opts->block_size = 4096;
 	opts->block_count = 1024;
+	opts->file_pos = 512;
 
 	for (i=1; i<argc; i++) {
 		if (strcmp(argv[i], "-d") == 0) {
@@ -180,10 +180,6 @@ failed:
 
 int getfd(struct options *opts)
 {
-	int open_mode = 0;
-
-	open_mode = OPEN_MODE;
-
 	return open(opts->filepath, OPEN_MODE, 0644);
 }
 
@@ -214,9 +210,6 @@ out:
 		printf("wait thread:%lu to exit\n", th_id);
 		pthread_join(th_id, NULL);
 	}
-
-	printf("input to exit:");
-	getchar();
 
 	if (fd >= 0) {
 		close(fd);

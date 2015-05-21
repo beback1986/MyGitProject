@@ -11,7 +11,6 @@
 
 #define BUF_SIZE 4096
 
-#if 0
 /*
  * align_size MUST be order of 2.
  * the size of alloced memory must be twice of align_size.
@@ -20,7 +19,6 @@ static void *memalign(void *p, unsigned long align_size)
 {
 	return (void *)(((unsigned long)p & ~(align_size-1)) + align_size);
 }
-#endif
 
 /************************************************************
  * Functions for worker inplements.
@@ -261,7 +259,8 @@ struct reader *init_io_worker(size_t size, unsigned int count, unsigned int seed
 
 	iow->flist 	= flist;
 	iow->size 	= size;
-	iow->buf 	= calloc(1, size);
+	iow->buf 	= calloc(1, size*2);
+	iow->buf	= memalign(iow->buf, size);
 	iow->count	= count;
 	if (!iow->buf) {
 		printf("Can not alloc buf for io worker.\n");
@@ -317,10 +316,11 @@ void *writer_routine(void *args)
 
 //printf("start writer: begin=%lu,count=%lu\n", writer->seed, writer->count);
 //	for (i=0; i<writer->count; i++) {
+	memset(writer->buf, 'c', writer->size);
 	while (1) {
 		writer->seed+=1;
 		num = writer->seed % flist->count;
-		fd = open(flist->list[num], O_RDWR|O_CREAT, 00644);
+		fd = open(flist->list[num], O_RDWR|O_CREAT|O_DIRECT, 00644);
 		if (fd < 0) {
 			printf("write open encounter %s %d(%s)\n",
 				flist->list[num], errno, strerror(errno));
