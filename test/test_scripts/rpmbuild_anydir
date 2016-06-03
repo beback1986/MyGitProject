@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ "x$1" == "x" ]; then
+	echo "please provide spec file"
+	exit 1
+fi
+
+#rpmbuild -bb nfs-utils.spec --define '_sourcedir /home/ryding/workspace/nfs/nfs-utils-ca-svn/branches-6/el6-u7'
+#rpmbuild -bb nfs-utils-lib.spec --define '_sourcedir /home/ryding/workspace/nfs/nfs-utils-lib-ca-svn/branches-6/el6-u7'
+rpmbuild --define '_sourcedir '${PWD}'' $@
